@@ -29,6 +29,7 @@ Although the machine learning processes are exclusively done in Python, we use a
 - When a key was held down
 - When a key was released
 - Which modifiers were held (control, alt, windows, and shift)
+
 All time accuracies are expressed in milliseconds.
 </p>
 <p>
