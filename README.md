@@ -14,7 +14,8 @@ We would really appreciate it! [See the official documentation here](https://git
 We take the safety of all volunteers very seriously. Several precautions are taken to maintain this privacy.
 
 - No data sets will be available on this repo
-- Only text editors and IDEs are allowed to log keystrokes
+- Only text editors and IDEs and communication apps (Teams, Zoom, Discord, Slack) are allowed to 
+  log keystrokes
 - The keylogger can be conveniently turned off at any time from the Windows taskbar
 
 
@@ -41,12 +42,20 @@ We have included the source code for our keylogger [here](/keylogger.ahk) if any
 <p>
 For the security of the user, this program will only collect 	keystrokes from the following programs:
 
-- Microsoft Word
-- IntelliJ IDEA
+- VS Code
+- Spyder
+- IntelliJ
+- PyCharm
+- Webstorm
+- CLion
 - Notepad
 - Notepad++
-- VS Code
 - Sublime Text
+- Microsoft Word
+- Microsoft Teams
+- Zoom
+- Slack
+- Discord
 </p>
 
 ## Maintainers

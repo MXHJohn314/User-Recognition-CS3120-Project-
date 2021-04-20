@@ -1,0 +1,14 @@
+ahk_exe Code.exe
+ahk_exe pythonw.exe
+ahk_exe idea64.exe
+ahk_exe pycharm64.exe
+ahk_exe webstorm64.exe
+ahk_exe clion64.exe
+ahk_exe notepad.exe
+ahk_exe notepad++.exe
+ahk_exe sublime_text.exe
+ahk_exe WINWORD.EXE
+ahk_exe Teams.exe
+ahk_exe Zoom.exe
+ahk_exe slack.exe
+ahk_exe Discord.exe

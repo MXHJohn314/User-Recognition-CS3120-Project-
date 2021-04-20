@@ -7,14 +7,10 @@ doublequote = `"
 logdir := A_ScriptDir "\logs.csv"
 
 safeGroup := "ahk_group safewindows"
-safeWindows := ["ahk_exe idea64.exe"
-, "ahk_exe notepad.exe"
-, "ahk_exe notepad++.exe"
-, "ahk_exe Code.exe"
-,"ahk_exe WINWORD.EXE"
-,"ahk_exe sublime_text.exe"]
-for key, val in  safeWindows {
-    GroupAdd, safeGroup,% val
+file := "safeGroupWindows.txt"
+loop read, %file% 
+{
+  GroupAdd, safeGroup, % A_LoopReadLine  
 }
 
 ;~ This creates the column headers for the outputted csv file
@@ -28,8 +24,6 @@ return
 make_menu() {
     Menu, TRAY, NoStandard
     Menu, TRAY, add, YOU ARE BEING LOGGED - help, help_handler
-    Menu, TRAY, add,
-    Menu, TRAY, add, Start new logfile, newlog_handler
     Menu, TRAY, add, About Keylogger, about_handler
     Menu, TRAY, add, Exit, exit_handler
 }
@@ -52,10 +46,6 @@ keyEvent() {
     row := A_MM "," A_dd "," A_Hour "," A_Min "," A_MSec "," isDown "," getMods() "," key "`n"
     FileAppend, %row%, %logdir%
 }
-
-; Todo: implement making separate logs
-newlog_handler:
-return
 
 ;~ Right-click this script's icon and select 'About' to read this
 about_handler:
