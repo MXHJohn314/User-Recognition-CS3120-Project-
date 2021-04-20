@@ -6,6 +6,7 @@ doublequote = `"
 ;~ The csv file will be created in the same directory that you put the script in (default is your Downloads folder)
 logdir := A_ScriptDir "\logs.csv"
 
+;~ The windows that we collect data from are all listed in the file named "safeGroupWindows.txt"
 safeGroup := "ahk_group safewindows"
 file := "safeGroupWindows.txt"
 loop read, %file% 
@@ -28,6 +29,7 @@ make_menu() {
     Menu, TRAY, add, Exit, exit_handler
 }
 
+;~ Returns a piece of the csv line for this keyevent; a comma-separated set of boolean values that tell us which modifiers were held down at the same time as the keyevent
 getMods(){
     return (GetKeyState("RControl", "P") || GetKeyState("LControl", "P")) . ","
     . (GetKeyState("RAlt", "P") || GetKeyState("LAlt", "P")) . ","
@@ -35,6 +37,7 @@ getMods(){
     . (GetKeyState("RShift", "P") || GetKeyState("LShift", "P"))
 }
 
+;~ Creates and appends a new record to log.csv for each keystroke.
 keyEvent() {
     global logdir
     isDown := !InStr(A_ThisHotkey, " Up")
@@ -63,6 +66,7 @@ help_handler:
 MsgBox % "All of your key presses are being logged to:`n" logdir
 return
 
+;~ This script only collects data from windows that are in the "safeGroupWindows.txt" file
 #IfWinActive,ahk_group safeGroup
 {
     ;~ This is a list of all the keys we want to capture
