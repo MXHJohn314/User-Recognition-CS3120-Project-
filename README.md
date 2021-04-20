@@ -1,6 +1,10 @@
 # CS_3120_Project
 
 A user-recognition project powered by keyboard input data. This program uses features discerned from data collected by volunteers. Our processes will explore several elementary techniques of machine learning.
+                
+## Want to become a volunteer?
+
+We would really appreciate it! [See the official documentation here](getting_started)
 
 ## User Data and Privacy
 
