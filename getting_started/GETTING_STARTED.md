@@ -23,7 +23,7 @@ eg: `git clone https://github.com/GalacticWafer/CS_3120_Project.git`
    ![alt text](taskbar_icon.png "Taskbar Icon")
 
 
-6. Right-clicking the icon  brings up the context menu. Here, you can read the about section, help 
+6. Right-clicking the icon brings up the context menu. Here you can read the about section, help 
    section, or exit if you are done running the keylogger.
    ![alt text](context_menu.png "Context Menu")
 
