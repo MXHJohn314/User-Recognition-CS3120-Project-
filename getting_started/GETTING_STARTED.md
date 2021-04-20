@@ -1,7 +1,7 @@
 # Getting Started
 
 In order to help us collect data for this project, we need volunteers that can donate some of their
-tying data. Please read [this section](https://www.autohotkey.com/download/) to learn more about how
+tying data. Please read [this section](https://github.com/GalacticWafer/CS_3120_Project/blob/main/README.md) to learn more about how
 we use volunteer data.
 
 1. Use your preferred method to clone a copy of the repo to your personal computer
