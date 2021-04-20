@@ -25,11 +25,12 @@ This repository merely acts as a storage for code that can be used to demonstrat
 ### Data Collection
 
 <p>
-Although the machine learning processes are exclusively done in Python, we use a scripting language called AutoHotkey to record keystrokes and times in the form of csv files. Here is a list of all the types of data we collect:
+Although the machine learning processes are exclusively done in Python, we use a scripting language called AutoHotkey to record keystrokes and the time they occurred in the form of csv files. Here is a list of all the types of data we collect:
 
 - When a key was held down
 - When a key was released
 - Which modifiers were held (control, alt, windows, and shift)
+
 All time accuracies are expressed in milliseconds.
 </p>
 <p>
