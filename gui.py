@@ -1,19 +1,17 @@
 # Importing Required libraries & Modules
-import os
+import tkinter
 from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog
 import time
 from datetime import datetime
 import keyboard
-
+from keylogger import Keylogger
 import smtplib  # for sending email using SMTP protocol (gmail)
 
-from keylogger import Keylogger
 
-EMAIL_ADDRESS = "thisisafakegmail@gmail.com"
-EMAIL_PASSWORD = "thisisafakepassword"
-
+# EMAIL_ADDRESS = "thisisafakegmail@gmail.com"
+# EMAIL_PASSWORD = "thisisafakepassword"
 
 
 # Defining TextEditor Class
@@ -23,15 +21,17 @@ class TextEditor:
         # Assigning root
         self.root = root
         # Title of the window
-        self.root.title("TEXT EDITOR")
+        self.root.title("Typing Test")
         # Window Geometry
-        self.root.geometry("1200x700+200+150")
+        self.root.geometry("800x500+200+150")
         # Initializing filename
         self.filename = None
         # Declaring Title variable
         self.title = StringVar()
         # Declaring Status variable
         self.status = StringVar()
+        # Declaring Sample Text variable
+        self.sample_text = StringVar()
         # Creating Titlebar
         self.titlebar = Label(self.root, textvariable=self.title,
                               font=("times new roman", 15, "bold"), bd=2, relief=GROOVE)
@@ -42,8 +42,19 @@ class TextEditor:
         # Creating Statusbar
         self.statusbar = Label(self.root, textvariable=self.status,
                                font=("times new roman", 15, "bold"), bd=2, relief=GROOVE)
+        # Creating Sample Text Area
+        self.sample_text_Area = tkinter.Label\
+            (self.root,
+             text=input_sample,
+             wraplength=750,
+             height=8,
+             justify=LEFT,
+             font=("times new roman", 15, "bold"),
+             bd=2, relief=GROOVE)
         # Packing status bar to root window
         self.statusbar.pack(side=BOTTOM, fill=BOTH)
+        # Packing status bar to root window
+        self.sample_text_Area.pack(side=TOP, fill=BOTH)
         # Initializing Status
         self.status.set(input_sample)
         # Creating Menubar
@@ -103,8 +114,6 @@ class TextEditor:
         self.txtarea.pack(fill=BOTH, expand=1)
         # Calling shortcuts funtion
         self.shortcuts()
-        # self.logger = Keylogger()
-        # self.logger.start()
 
     # Defining settitle function
     def settitle(self):
@@ -279,42 +288,13 @@ class TextEditor:
 
 
 if __name__ == "__main__":
-    print('Creating TK Container')
+    # todo: make the keylogger only work when the gui has focus 
     root = Tk()
     # Passing Root to TextEditor Class
     big_ass_string = '''    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'''
-    editor = TextEditor(root, big_ass_string)
+    logger = Keylogger()
+    keyboard.on_press(callback=logger.log_press)
+    # keyboard.wait('esc')
     # Root Window Looping
+    editor = TextEditor(root, big_ass_string)
     root.mainloop()
-
-
-t_array = ['Y', 'm', 'H', 'M', 'S']
-mods = ['shift', 'ctrl', 'alt', 'windows']
-file = open(f'pylogs.csv', 'w')
-
-def log_press(event):
-    t = datetime.now()
-    key = str(event)[14:len(str(event)) - 1].split(' ')[0]
-    if key in keyboard.all_modifiers:
-        return
-    format_row(key, t)
-    keyboard.on_release_key(key, callback=log_release)
-
-
-def format_row(key, t):
-    mod = ','.join(['1' if keyboard.is_pressed(mod) else '0' for mod in mods])
-    millis = int((time.mktime(t.timetuple()) + t.microsecond / 1E6) * 1000) % 1000
-    time_str = ','.join([f'{t.strftime("%" + i)}' for i in t_array])
-    row = f'{time_str},{millis},1,{mod},{key}\n'
-    file.write(row)
-    print(row)
-
-
-def log_release(event):
-    key = str(event)[14:len(str(event)) - 1].split(' ')[0]
-    t = datetime.now()
-    format_row(key, t)
-    if key == 'esc':
-        file.close()
-        exit(0)
-keyboard.wait('esc')

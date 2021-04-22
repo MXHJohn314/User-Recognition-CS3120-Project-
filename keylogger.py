@@ -48,6 +48,3 @@ class Keylogger:
             self.file.close()
         del self.presses[key]
 
-    def start(self):
-        keyboard.on_press(callback=self.log_press)
-        keyboard.wait('esc')  
