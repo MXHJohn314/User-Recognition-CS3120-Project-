@@ -23,13 +23,11 @@ This repository merely acts as a storage for code that can be used to demonstrat
 
 ### Required Python Modules
 
-<p>
 - tkinter
 - re
 - os
 - time
 - datetime
-</p>
 
 ### Data Collection
 
