@@ -4,18 +4,12 @@ A user-recognition project powered by keyboard input data. This program uses fea
                 
 ## Want to become a volunteer?
 
-We would really appreciate it! [See the official documentation here](https://github.com/GalacticWafer/CS_3120_Project/blob/main/getting_started/GETTING_STARTED.md)
-
-
-- We can only collect data from keystrokes sent to the typing test. No other windows are allowed to 
-  log keystrokes
+- This program only records keystroks from the typing test. 
+- No other windows are allowed to log keystrokes
 - No data sets will be available on this repo
 - The program can be conveniently turned off at any time by closing the typing test
 
-
-This repository merely acts as a storage for code that can be used to demonstrate how to identify users based on the way that they type. 
-
-
+We would really appreciate your support. [See the official documentation here](https://github.com/GalacticWafer/CS_3120_Project/blob/main/getting_started/GETTING_STARTED.md)
 
 ## Required Python Modules
 
@@ -24,20 +18,6 @@ This repository merely acts as a storage for code that can be used to demonstrat
 - os
 - time
 - datetime
-
-### Data Collection
-
-<p>
-We use a typing test with a given prompt to record keystrokes and the time they occurred in the form of csv files. Here is a list of all the types of data we collect:
-
-- When a key was held down
-- When a key was released
-
-All time accuracies are expressed in milliseconds.
-</p>
-<p>
-We have included the source code for our gui [here](/texteditor.py)
-</p>
 
 ## Maintainers
 
