@@ -10,7 +10,6 @@ We would really appreciate it! [See the official documentation here](https://git
 
 ### It's a big deal
 
-<p>
 - We can only collect data from keystrokes sent to the typing test. No other windows are allowed to 
   log keystrokes
 - No data sets will be available on this repo
@@ -18,7 +17,7 @@ We would really appreciate it! [See the official documentation here](https://git
 
 
 This repository merely acts as a storage for code that can be used to demonstrate how to identify users based on the way that they type. 
-</p>
+
 
 
 ### Required Python Modules
