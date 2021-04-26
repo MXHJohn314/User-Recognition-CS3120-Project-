@@ -8,7 +8,7 @@ A user-recognition project powered by keyboard input data. This program uses fea
 2. Use your preferred method of running python files to run typingtest.py
 3. When the gui appears, start typing the prompt in the lower half of the window.
 4. There are two prompts to type. One is for model training, the other is for testing.
-5. After you complete both test, send your `logs.csv` to us. You can use Teams if you're connected to us through MSU Denver, or send to one of the email addresses below.
+5. After you complete both tests, send your `logs.csv` to us. You can use Teams if you're connected to us through MSU Denver, or send to one of the email addresses below.
 
 ### Maintainers
 - Malcolm Johnson https://galacticwafer.github.io
