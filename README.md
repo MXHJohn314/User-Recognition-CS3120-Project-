@@ -11,8 +11,8 @@ A user-recognition project powered by keyboard input data. This program uses fea
 5. After you complete both tests, send your `logs.csv` to us. You can use Teams if you're connected to us through MSU Denver, or send to one of the email addresses below.
 
 ### Maintainers
-- Malcolm Johnson https://galacticwafer.github.io
-- Adam Wojdyla https://github.com/awojdyla89
+- Malcolm Johnson mjohn314@msudenver.edu
+- Adam Wojdyla awojdyl2@msudenver.edu
 
 ## Required Python Modules
 All are pre-installed with the standard Python3 library.
