@@ -6,9 +6,6 @@ A user-recognition project powered by keyboard input data. This program uses fea
 
 We would really appreciate it! [See the official documentation here](https://github.com/GalacticWafer/CS_3120_Project/blob/main/getting_started/GETTING_STARTED.md)
 
-## User Data and Privacy
-
-### It's a big deal
 
 - We can only collect data from keystrokes sent to the typing test. No other windows are allowed to 
   log keystrokes
