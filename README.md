@@ -9,7 +9,7 @@ A user-recognition project powered by keyboard input data. This program uses fea
 - No data sets will be available on this repo
 - The program can be conveniently turned off at any time by closing the typing test
 
-We would really appreciate your support. [See the official documentation here](https://github.com/GalacticWafer/CS_3120_Project/blob/main/getting_started/GETTING_STARTED.md)
+We would really appreciate your support.
 
 ## Required Python Modules
 
