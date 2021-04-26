@@ -13,50 +13,38 @@ We would really appreciate it! [See the official documentation here](https://git
 <p>
 We take the safety of all volunteers very seriously. Several precautions are taken to maintain this privacy.
 
-- No data sets will be available on this repo
-- Only text editors and IDEs and communication apps (Teams, Zoom, Discord, Slack) are allowed to 
+- We can only collect data from keystrokes sent to the typing test. No other windows are allowed to 
   log keystrokes
-- The keylogger can be conveniently turned off at any time from the Windows taskbar
+- No data sets will be available on this repo
+- The keylogger can be conveniently turned off at any time by closing the typing test
 
 
 This repository merely acts as a storage for code that can be used to demonstrate how to identify users based on the way that they type. 
 </p>
 
+
+### Required Python Modules
+
+<p>
+- tkinter
+- re
+- os
+- time
+- datetime
+</p>
+
 ### Data Collection
 
 <p>
-Although the machine learning processes are exclusively done in Python, we use a scripting language called AutoHotkey to record keystrokes and the time they occurred in the form of csv files. Here is a list of all the types of data we collect:
+We use a typing test with a given prompt to record keystrokes and the time they occurred in the form of csv files. Here is a list of all the types of data we collect:
 
 - When a key was held down
 - When a key was released
-- Which modifiers were held (control, alt, windows, and shift)
 
 All time accuracies are expressed in milliseconds.
 </p>
 <p>
-We encourage volunteers to check out this simple automation language for the Windows environment. Learn more about AutoHotkey here:
-
-https://www.autohotkey.com/
-
-We have included the source code for our keylogger [here](/keylogger.ahk) if anyone would like to run the program from source for themselves.
-</p>
-<p>
-For the security of the user, this program will only collect 	keystrokes from the following programs:
-
-- VS Code
-- Spyder
-- IntelliJ
-- PyCharm
-- Webstorm
-- CLion
-- Notepad
-- Notepad++
-- Sublime Text
-- Microsoft Word
-- Microsoft Teams
-- Zoom
-- Slack
-- Discord
+We have included the source code for our gui [here](/texteditor.py)
 </p>
 
 ## Maintainers
