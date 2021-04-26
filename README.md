@@ -16,7 +16,7 @@ We take the safety of all volunteers very seriously. Several precautions are tak
 - We can only collect data from keystrokes sent to the typing test. No other windows are allowed to 
   log keystrokes
 - No data sets will be available on this repo
-- The keylogger can be conveniently turned off at any time by closing the typing test
+- The program can be conveniently turned off at any time by closing the typing test
 
 
 This repository merely acts as a storage for code that can be used to demonstrate how to identify users based on the way that they type. 
