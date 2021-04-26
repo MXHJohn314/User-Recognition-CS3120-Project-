@@ -11,8 +11,6 @@ We would really appreciate it! [See the official documentation here](https://git
 ### It's a big deal
 
 <p>
-We take the safety of all volunteers very seriously. Several precautions are taken to maintain this privacy.
-
 - We can only collect data from keystrokes sent to the typing test. No other windows are allowed to 
   log keystrokes
 - No data sets will be available on this repo
