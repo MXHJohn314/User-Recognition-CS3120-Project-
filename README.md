@@ -10,6 +10,10 @@ A user-recognition project powered by keyboard input data. This program uses fea
 4. There are two prompts to type. One is for model training, the other is for testing.
 5. After you complete both test, send your `logs.csv` to us. You can use Teams if you're connected to us through MSU Denver, or send to one of the email addresses below.
 
+### Maintainers
+- Malcolm Johnson https://galacticwafer.github.io
+- Adam Wojdyla https://github.com/awojdyla89
+
 ## Required Python Modules
 All are pre-installed with the standard Python3 library.
 - tkinter
@@ -17,12 +21,6 @@ All are pre-installed with the standard Python3 library.
 - os
 - time
 - datetime
-
-
-## Maintainers
-- Malcolm Johnson https://galacticwafer.github.io
-- Adam Wojdyla https://github.com/awojdyla89
-
 
 ## Secure Programming
 - This program only records keystrokes from the typing test. 
