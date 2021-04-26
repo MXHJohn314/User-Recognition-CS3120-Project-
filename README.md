@@ -12,7 +12,7 @@ A user-recognition project powered by keyboard input data. This program uses fea
 We would really appreciate your support.
 
 ## Required Python Modules
-
+All are pre-installed with the standard Python3 library.
 - tkinter
 - re
 - os
