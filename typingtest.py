@@ -47,8 +47,8 @@ class TextEditor:
         self.generate_prompt()
         self.size = self.prompt.index(self.prompt.index(f'end-1c'))
         self.prev = None
-        messagebox.showinfo('Get Ready!', 'The test will begin now.')
-        self.txt_in.focus_set()
+        messagebox.showinfo('Get Ready!', 'The test will begin now.', parent=self.txt_in)
+        self.txt_in.focus_force()
         self.root.bind('<Key>', self.check_text)
         self.root.bind('<KeyRelease>', self.logger.log_release)
         for j in [self.txt_in, self.prompt]:
@@ -64,7 +64,6 @@ class TextEditor:
             prompt = file.read()
             file.close()
         self.prompt.insert(1.0, prompt)
-        self.txt_in.insert(1.0, prompt[:len(prompt) - 2])
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white', state='disabled')
         self.prompt.tag_add('', '1.0', END)
         change_color(self.prompt, '', self.colors['black'])
@@ -110,20 +109,21 @@ class TextEditor:
             self.txt_in.config(state='normal')
             change_color(self.txt_in, self.prev, c)
             change_color(self.prompt, self.prev, self.colors['black'])
-        change_color(self.prompt, current, self.colors['white'])
         self.prev = current
         self.prompt.config(state='disabled')
         self.logger.log_press(e.keysym)
-        if self.txt_in.index(f'{self.size}-1c') == self.txt_in.index(self.txt_in.index(f'end-1c')):
+        if self.prompt.index(f'{self.size}-1c') == self.txt_in.index(f'{self.size}-1c'):
             has_next_prompt = logger.close(1)
             if has_next_prompt:
-                messagebox.showinfo('Training Complete', 'Now time for the test prompt.')
+                messagebox.showinfo('Training Complete', 'Now time for the test prompt.',
+                                    parent=self.txt_in)
                 self.generate_prompt('train_prompt.txt')
+                self.txt_in.focus_force()
             else:
                 messagebox.showinfo(
                     'Testing Complete!',
                     'Thanks for participating! Please contact '
-                    'AdaM Wojdyla or Malcolm Johnson to submit.')
+                    'AdaM Wojdyla or Malcolm Johnson to submit.', parent=self.root)
                 self.logger.close(1)
                 self.root.destroy()
 
@@ -137,12 +137,8 @@ class Logger:
         self.t_array = ['Y', 'm', 'D', 'H', 'M', 'S']
         self.mods = ['shift', 'ctrl', 'alt', 'windows']
         self.check = None
-        csv = 'pylogs.csv'
-        if not (os.path.exists(csv) and os.path.isfile(csv)):
-            self.file = open(f'{csv}', 'w')
-            self.file.write('year,month,day,hour,minute,sec,millis,isDown,key\n')
-        else:
-            self.file = open(f'{csv}', 'a')
+        self.file = open(f'{"train_logs.csv"}', 'w')
+        self.file.write('year,month,day,hour,minute,sec,millis,isDown,key\n')
         self.presses = {}
 
     def log_press(self, key):
@@ -173,6 +169,8 @@ class Logger:
     def close(self, finished):
         self.file.close()
         self.completed_logs += finished
+        if finished == 1:
+            self.file = open(f'{"test_logs.csv"}', 'w')
         return self.completed_logs == 1
 
 
