@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 
 bad_keys = {'XF86AudioPlay', 'XF86AudioLowerVolume', 'Win_L', 'Win_R',
-            'XF86AudioRaiseVolume', 'XF86AudioMute',  'Shift_L',
+            'XF86AudioRaiseVolume', 'XF86AudioMute', 'Shift_L',
             'Shift_R', 'Escape', 'Delete', 'Left', 'Up', 'Down',
             'Right', 'Home', 'Prior', 'End', 'Next', 'Insert', 'App',
             'Control_L', 'Control_R', 'Alt_L', 'Alt_R'}
@@ -19,7 +19,7 @@ def change_color(txt, name, c):
 
 def on_closing():
     if messagebox.askokcancel("Quit", "Do you want to quit?"):
-        logger.close()
+        logger.close(0)
         editor.root.destroy()
 
 
@@ -47,14 +47,24 @@ class TextEditor:
         self.generate_prompt()
         self.size = self.prompt.index(self.prompt.index(f'end-1c'))
         self.prev = None
+        messagebox.showinfo('Get Ready!', 'The test will begin now.')
+        self.txt_in.focus_set()
         self.root.bind('<Key>', self.check_text)
         self.root.bind('<KeyRelease>', self.logger.log_release)
+        for j in [self.txt_in, self.prompt]:
+            for i in ['<Control-a>', '<Control-x>', '<Control-c>', '<Control-v>', '<Button-3>',
+                      '<Button-2>']:
+                j.bind(i, lambda _e: 'break')
 
-    def generate_prompt(self):
-        with open('prompt.txt', 'r') as file:
+    def generate_prompt(self, txt='test_prompt.txt'):
+        self.prompt.config(state='normal')
+        self.prompt.delete('1.0', END)
+        self.txt_in.delete('1.0', END)
+        with open(txt, 'r') as file:
             prompt = file.read()
             file.close()
         self.prompt.insert(1.0, prompt)
+        self.txt_in.insert(1.0, prompt[:len(prompt) - 2])
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white', state='disabled')
         self.prompt.tag_add('', '1.0', END)
         change_color(self.prompt, '', self.colors['black'])
@@ -83,10 +93,6 @@ class TextEditor:
             if i == 0:
                 c = self.colors['white']
                 change_color(self.prompt, f'{s}-{e}', c)
-        for j in [self.txt_in, self.prompt]:
-            for i in ['<Control-a>', '<Control-x>', '<Control-c>', '<Control-v>', '<Button-3>',
-                      '<Button-2>']:
-                j.bind(i, lambda _e: 'break')
         self.txt_in.config(wrap=WORD, exportselection=0)
 
     def check_text(self, e):
@@ -107,11 +113,19 @@ class TextEditor:
         change_color(self.prompt, current, self.colors['white'])
         self.prev = current
         self.prompt.config(state='disabled')
-        self.logger.log_press(e.keysym, 1)
-        if self.size == self.txt_in.index(self.txt_in.index(f'end-1c')):
-            tk.messagebox.showinfo("Done", "Thanks for participating!")
-            self.root.destroy()
-            return 0
+        self.logger.log_press(e.keysym)
+        if self.txt_in.index(f'{self.size}-1c') == self.txt_in.index(self.txt_in.index(f'end-1c')):
+            has_next_prompt = logger.close(1)
+            if has_next_prompt:
+                messagebox.showinfo('Training Complete', 'Now time for the test prompt.')
+                self.generate_prompt('train_prompt.txt')
+            else:
+                messagebox.showinfo(
+                    'Testing Complete!',
+                    'Thanks for participating! Please contact '
+                    'AdaM Wojdyla or Malcolm Johnson to submit.')
+                self.logger.close(1)
+                self.root.destroy()
 
     def mainloop(self):
         self.root.mainloop()
@@ -119,6 +133,7 @@ class TextEditor:
 
 class Logger:
     def __init__(self):
+        self.completed_logs = 0
         self.t_array = ['Y', 'm', 'D', 'H', 'M', 'S']
         self.mods = ['shift', 'ctrl', 'alt', 'windows']
         self.check = None
@@ -130,14 +145,12 @@ class Logger:
             self.file = open(f'{csv}', 'a')
         self.presses = {}
 
-    def log_press(self, key, result):
+    def log_press(self, key):
         t = datetime.now()
         if key in self.presses:
             return
         row = self.format_row(key, t)
         self.presses[key] = [row]
-        if result == 0:
-            self.close()
 
     def format_row(self, key, t):
         millis = int((time.mktime(t.timetuple()) + t.microsecond / 1E6) * 1000) % 1000
@@ -157,8 +170,10 @@ class Logger:
         self.file.write(both_rows)
         del self.presses[key]
 
-    def close(self):
+    def close(self, finished):
         self.file.close()
+        self.completed_logs += finished
+        return self.completed_logs == 1
 
 
 if __name__ == "__main__":
