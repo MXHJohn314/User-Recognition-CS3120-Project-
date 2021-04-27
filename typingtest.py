@@ -2,7 +2,6 @@ from tkinter import *
 import tkinter as tk
 from tkinter import messagebox
 import re
-import os
 import time
 from datetime import datetime
 
@@ -109,6 +108,7 @@ class TextEditor:
             self.txt_in.tag_add(self.prev, prev_s, prev_e)
             self.txt_in.config(state='normal')
             change_color(self.txt_in, self.prev, c)
+            change_color(self.prompt, current, self.colors['white'])
             change_color(self.prompt, self.prev, self.colors['black'])
         self.prev = current
         self.prompt.config(state='disabled')
