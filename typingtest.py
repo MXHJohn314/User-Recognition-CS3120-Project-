@@ -40,9 +40,10 @@ class TextEditor:
         }
         self.root = Tk()
         self.root.title("Typing Test")
-        self.root.geometry("600x470+200+125")
+        # self.root.geometry("600x470+200+125")
         self.prompt = Text(height=14, font=("Arial", 10))
         self.txt_in = Text(height=14, font=("Arial", 10))
+        
         self.btn = tk.Button(self.root, text="Generate Prompt", command=self.generate_prompt)
         self.generate_prompt()
         self.size = self.prompt.index(self.prompt.index(f'end-1c'))
@@ -67,8 +68,8 @@ class TextEditor:
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white', state='disabled')
         self.prompt.tag_add('', '1.0', END)
         change_color(self.prompt, '', self.colors['black'])
-        self.prompt.pack()
-        self.txt_in.pack()
+        self.txt_in.grid(row=2, column=0, padx=10, pady=10)
+        self.prompt.grid(row=0, column=0, padx=10, pady=10)
         s = '1.0'
         matches = [_ for _ in re.finditer(r'(\s+|\S+)', prompt)]
         for i, match in enumerate(matches):
