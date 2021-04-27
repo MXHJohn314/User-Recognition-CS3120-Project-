@@ -61,9 +61,11 @@ class TextEditor:
         self.prompt.delete('1.0', END)
         self.txt_in.delete('1.0', END)
         with open(txt, 'r') as file:
-            prompt = file.read()
+            prompt = file.read().strip()
             file.close()
         self.prompt.insert(1.0, prompt)
+        # self.txt_in.insert(1.0, prompt[: len(prompt) - 5])  # for testing purposes. Use to 
+        # shortcut the train and test phase to type only the last 4 chars of each prompt.
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white', state='disabled')
         self.prompt.tag_add('', '1.0', END)
         change_color(self.prompt, '', self.colors['black'])
@@ -126,6 +128,7 @@ class TextEditor:
                     'Thanks for participating! Please contact '
                     'AdaM Wojdyla or Malcolm Johnson to submit.', parent=self.root)
                 self.logger.close(1)
+                self.logger.file.close()
                 self.root.destroy()
 
     def mainloop(self):
@@ -180,3 +183,4 @@ if __name__ == "__main__":
     editor = TextEditor(logger)
     editor.root.protocol("WM_DELETE_WINDOW", on_closing)
     editor.mainloop()
+
