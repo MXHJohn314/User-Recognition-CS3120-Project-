@@ -17,16 +17,10 @@ A user-recognition project powered by keyboard input data. This program uses fea
 ## Required Python Modules
 - tkinter
 - re
-- os
 - time
 - datetime
 
-All are pre-installed with the standard Python3 library (unless you're on linux).  Note: if you are running Linux, you are running linux, use your package manager to install `python3-tk`. 
-
-ex:
-- Ubuntu: `sudo apt-get install python3-tk`
-
-
+All modules needed are pre-installed unless you're on linux. In that case, use your package manager to install `python3-tk`. ex: with Ubuntu: `sudo apt-get install python3-tk`
              
 ## Secure Programming
 - This program only records keystrokes from the typing test. 
