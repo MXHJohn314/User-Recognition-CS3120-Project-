@@ -29,6 +29,7 @@ class TextEditor:
         self.tags2 = {}
         self.num_ranges = 0
         self.spaces = []
+        self.start = ''
         self.colors = {
             'white': {'bg': 'black', 'fg': 'white'},
             'black': {'bg': 'white', 'fg': 'black'},
@@ -41,7 +42,6 @@ class TextEditor:
         # self.root.geometry("600x470+200+125")
         self.prompt = Text(height=14, font=("Arial", 10))
         self.txt_in = Text(height=14, font=("Arial", 10))
-
         self.btn = tk.Button(self.root, text="Generate Prompt", command=self.generate_prompt)
         self.generate_prompt()
         self.prev = None
@@ -49,7 +49,6 @@ class TextEditor:
         self.txt_in.focus_force()
         self.root.bind('<Key>', self.check_text)
         self.root.bind('<KeyRelease>', lambda e: self.logger.log_release(e, ','.join(shifts.values())))
-
         chars = [_ for _ in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`1234567890" \
                             "-=~!@#$%^&*()_+[{]}\\|\'\";:,./?>"]
         self.root.bind('<Shift_L>', shift_check)
@@ -62,7 +61,6 @@ class TextEditor:
             if i == 'great':
                 break
             self.root.bind(f'<KeyRelease-{i}>', lambda e: self.logger.log_release(e, ','.join(shifts.values())))
-
         for i in chars:
             self.root.bind(i, self.check_text)
             self.root.bind(f'<KeyRelease-{i}>', lambda e: self.logger.log_release(e, ','.join(shifts.values())))
@@ -77,12 +75,10 @@ class TextEditor:
         self.logger.open(f"{txt.split('.')[0]}.csv")
         self.prompt.insert(1.0, prompt)
         self.size = self.prompt.index(self.prompt.index(f'end-1c'))
-
         '''For testing purposes. Use to shortcut the train
-         and test phase to type only the last 4 chars of each prompt.'''
-        # self.txt_in.insert(1.0, prompt[: len(prompt) - 25])
-
-        self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white', state='disabled')
+         and test phase to type only the last few chars of each prompt.'''
+        # self.txt_in.insert(1.0, prompt[: len(prompt) - 50])
+        self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white')
         self.prompt.tag_add('', '1.0', END)
         change_color(self.prompt, '', self.colors['black'])
         self.txt_in.grid(row=2, column=0, padx=10, pady=10)
@@ -93,6 +89,8 @@ class TextEditor:
             str_len = match.end() - match.start()
             e = self.prompt.index(f'{s}+{str_len}c')
             rng = f'{s}-{e}'
+            if i == 0:
+                self.start == rng
             self.tags.append(rng)
             for j in range(str_len + 1):
                 index = self.prompt.index(f'{s}+{j}c')
@@ -107,18 +105,18 @@ class TextEditor:
                 self.tags.append(space_tag)
                 self.txt_in.tag_add(space_tag, space_start, space_end)
                 s = self.prompt.index(f'{e}+{offset}c')
-            if i == 0:
-                c = self.colors['white']
-                change_color(self.prompt, f'{s}-{e}', c)
+        current = self.tags2[self.txt_in.index(INSERT)]
+        change_color(self.prompt, current, self.colors['white'])
         self.txt_in.config(wrap=WORD, exportselection=0)
+        self.prompt.config(state='disabled')
 
     def check_text(self, e):
+        t = time.time_ns()
+        current = self.tags2[self.txt_in.index(INSERT)]
         if e.keysym in bad_keys:
             return
-
         """For degugging"""
         shifts_state = f'{shifts["Shift_L"]},{shifts["Shift_R"]}'
-        current = self.tags2[self.txt_in.index(INSERT)]
         if self.prev and current != self.prev:
             prev_s, prev_e = self.prev.split('-')
             check = self.txt_in.get(prev_s, prev_e) == self.prompt.get(prev_s, prev_e)
@@ -131,7 +129,7 @@ class TextEditor:
             change_color(self.prompt, self.prev, self.colors['black'])
         self.prev = current
         self.prompt.config(state='disabled')
-        self.logger.log_press(e.keysym, shifts_state)
+        self.logger.log_press(e.keysym, shifts_state, t)
         if self.prompt.index(f'{self.size}-1c') == self.txt_in.index(f'{self.size}-1c'):
             if self.logger.close() == 'train_prompt.csv':
                 messagebox.showinfo('Training Complete', 'Now time for the test prompt.',
@@ -165,21 +163,18 @@ class Logger:
         self.name = ''
         self.presses = {}
 
-    def log_press(self, key, shifts_state):
-        t = datetime.now()
+    def log_press(self, key, shifts_state, t):
         if key in self.presses:
             return
         self.presses[key] = [self.format_row(key, t, '1', shifts_state)]
 
     def format_row(self, key, t, is_down, shifts_state):
-        millis = int((time.mktime(t.timetuple()) + t.microsecond / 1E6) * 1000) % 1000
-        time_str = ','.join([f'{t.strftime("%" + i)}' for i in self.t_array])
-        # day, hour, minute, sec, millis, isDown, key, l_shift, r_shift\n
-        row = f'{time_str},{millis},{is_down},{key},{shifts_state}\n'
+        # time, isDown, key, l_shift, r_shift\n
+        row = f'{t},{is_down},{key},{shifts_state}\n'
         return row
 
     def log_release(self, event, shifts_state):
-        t = datetime.now()
+        t = time.time_ns()
         key = event.char
         if key not in self.presses:
             return
@@ -189,7 +184,7 @@ class Logger:
 
     def close(self):
         with open(self.name, 'w') as file:
-            file.write('day,hour,minute,sec,millis,isDown,key,l_shift,r_shift\n' + self.log)
+            file.write('time,isDown,key,l_shift,r_shift\n' + self.log)
         self.log = ''
         return self.name
 
