@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import messagebox
 import re
 import time
-from datetime import datetime
 
 shifts = {'Shift_L': '0', 'Shift_R': '0'}
 bad_keys = {'XF86AudioPlay', 'XF86AudioLowerVolume', 'Win_L', 'Win_R',
@@ -111,10 +110,14 @@ class TextEditor:
         self.prompt.config(state='disabled')
 
     def check_text(self, e):
+        print(e.keysym)
         t = time.time_ns()
-        current = self.tags2[self.txt_in.index(INSERT)]
+        if e.keysym == 'Return':
+            self.txt_in.delete('2.0')
+            return
         if e.keysym in bad_keys:
             return
+        current = self.tags2[self.txt_in.index(INSERT)]
         """For degugging"""
         shifts_state = f'{shifts["Shift_L"]},{shifts["Shift_R"]}'
         if self.prev and current != self.prev:
