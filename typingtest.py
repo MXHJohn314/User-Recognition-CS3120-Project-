@@ -5,6 +5,7 @@ import re
 import time
 from datetime import datetime
 
+shifts = {'Shift_L': '0', 'Shift_R': '0'}
 bad_keys = {'XF86AudioPlay', 'XF86AudioLowerVolume', 'Win_L', 'Win_R',
             'XF86AudioRaiseVolume', 'XF86AudioMute', 'Shift_L',
             'Shift_R', 'Escape', 'Delete', 'Left', 'Up', 'Down',
@@ -12,19 +13,17 @@ bad_keys = {'XF86AudioPlay', 'XF86AudioLowerVolume', 'Win_L', 'Win_R',
             'Control_L', 'Control_R', 'Alt_L', 'Alt_R'}
 
 
+def shift_check(e):
+    shifts[e.keysym] = '1' if '2' == e.type else '0'
+
+
 def change_color(txt, name, c):
     txt.tag_configure(name, foreground=c['fg'], background=c['bg'])
 
 
-def on_closing():
-    if messagebox.askokcancel("Quit", "Do you want to quit?"):
-        logger.close(0)
-        editor.root.destroy()
-
-
 class TextEditor:
-    def __init__(self, _logger):
-        self.logger = _logger
+    def __init__(self):
+        self.logger = Logger()
         self.sorted_ranges = []
         self.tags = []
         self.tags2 = {}
@@ -42,30 +41,47 @@ class TextEditor:
         # self.root.geometry("600x470+200+125")
         self.prompt = Text(height=14, font=("Arial", 10))
         self.txt_in = Text(height=14, font=("Arial", 10))
-        
+
         self.btn = tk.Button(self.root, text="Generate Prompt", command=self.generate_prompt)
         self.generate_prompt()
-        self.size = self.prompt.index(self.prompt.index(f'end-1c'))
         self.prev = None
         messagebox.showinfo('Get Ready!', 'The test will begin now.', parent=self.txt_in)
         self.txt_in.focus_force()
         self.root.bind('<Key>', self.check_text)
-        self.root.bind('<KeyRelease>', self.logger.log_release)
-        for j in [self.txt_in, self.prompt]:
-            for i in ['<Control-a>', '<Control-x>', '<Control-c>', '<Control-v>', '<Button-3>',
-                      '<Button-2>']:
-                j.bind(i, lambda _e: 'break')
+        self.root.bind('<KeyRelease>', lambda e: self.logger.log_release(e, ','.join(shifts.values())))
 
-    def generate_prompt(self, txt='test_prompt.txt'):
+        chars = [_ for _ in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`1234567890" \
+                            "-=~!@#$%^&*()_+[{]}\\|\'\";:,./?>"]
+        self.root.bind('<Shift_L>', shift_check)
+        self.root.bind('<Shift_R>', shift_check)
+        self.root.bind('Control-v', 'break')
+        self.root.bind('<KeyRelease-Shift_L>', shift_check)
+        self.root.bind('<KeyRelease-Shift_R>', shift_check)
+        for i in ['less', 'BackSpace', 'space', 'Caps_Lock']:
+            self.root.bind(i, self.check_text)
+            if i == 'great':
+                break
+            self.root.bind(f'<KeyRelease-{i}>', lambda e: self.logger.log_release(e, ','.join(shifts.values())))
+
+        for i in chars:
+            self.root.bind(i, self.check_text)
+            self.root.bind(f'<KeyRelease-{i}>', lambda e: self.logger.log_release(e, ','.join(shifts.values())))
+
+    def generate_prompt(self, txt='train_prompt.txt'):
         self.prompt.config(state='normal')
         self.prompt.delete('1.0', END)
         self.txt_in.delete('1.0', END)
         with open(txt, 'r') as file:
             prompt = file.read().strip()
             file.close()
+        self.logger.open(f"{txt.split('.')[0]}.csv")
         self.prompt.insert(1.0, prompt)
-        # self.txt_in.insert(1.0, prompt[: len(prompt) - 5])  # for testing purposes. Use to 
-        # shortcut the train and test phase to type only the last 4 chars of each prompt.
+        self.size = self.prompt.index(self.prompt.index(f'end-1c'))
+
+        '''For testing purposes. Use to shortcut the train
+         and test phase to type only the last 4 chars of each prompt.'''
+        # self.txt_in.insert(1.0, prompt[: len(prompt) - 25])
+
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white', state='disabled')
         self.prompt.tag_add('', '1.0', END)
         change_color(self.prompt, '', self.colors['black'])
@@ -97,10 +113,11 @@ class TextEditor:
         self.txt_in.config(wrap=WORD, exportselection=0)
 
     def check_text(self, e):
-        if e.state and e.state != 0x0001 or e.keysym in bad_keys:
+        if e.keysym in bad_keys:
             return
-        key = e.char
-        print(f"e='{key}'")
+
+        """For degugging"""
+        shifts_state = f'{shifts["Shift_L"]},{shifts["Shift_R"]}'
         current = self.tags2[self.txt_in.index(INSERT)]
         if self.prev and current != self.prev:
             prev_s, prev_e = self.prev.split('-')
@@ -114,73 +131,73 @@ class TextEditor:
             change_color(self.prompt, self.prev, self.colors['black'])
         self.prev = current
         self.prompt.config(state='disabled')
-        self.logger.log_press(e.keysym)
+        self.logger.log_press(e.keysym, shifts_state)
         if self.prompt.index(f'{self.size}-1c') == self.txt_in.index(f'{self.size}-1c'):
-            has_next_prompt = logger.close(1)
-            if has_next_prompt:
+            if self.logger.close() == 'train_prompt.csv':
                 messagebox.showinfo('Training Complete', 'Now time for the test prompt.',
                                     parent=self.txt_in)
-                self.generate_prompt('train_prompt.txt')
+                self.generate_prompt('test_prompt.txt')
                 self.txt_in.focus_force()
             else:
                 messagebox.showinfo(
                     'Testing Complete!',
                     'Thanks for participating! Please contact '
                     'AdaM Wojdyla or Malcolm Johnson to submit.', parent=self.root)
-                self.logger.close(1)
-                self.logger.file.close()
                 self.root.destroy()
 
     def mainloop(self):
         self.root.mainloop()
 
+    def on_closing(self):
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.logger.close()
+            editor.root.destroy()
+
 
 class Logger:
     def __init__(self):
+        self.log = ''
         self.completed_logs = 0
-        self.t_array = ['Y', 'm', 'D', 'H', 'M', 'S']
+        self.t_array = ['D', 'H', 'M', 'S']
         self.mods = ['shift', 'ctrl', 'alt', 'windows']
         self.check = None
-        self.file = open(f'{"train_logs.csv"}', 'w')
-        self.file.write('year,month,day,hour,minute,sec,millis,isDown,key\n')
+        self.file = None
+        self.name = ''
         self.presses = {}
 
-    def log_press(self, key):
+    def log_press(self, key, shifts_state):
         t = datetime.now()
         if key in self.presses:
             return
-        row = self.format_row(key, t)
-        self.presses[key] = [row]
+        self.presses[key] = [self.format_row(key, t, '1', shifts_state)]
 
-    def format_row(self, key, t):
+    def format_row(self, key, t, is_down, shifts_state):
         millis = int((time.mktime(t.timetuple()) + t.microsecond / 1E6) * 1000) % 1000
         time_str = ','.join([f'{t.strftime("%" + i)}' for i in self.t_array])
-        row = f'{time_str},{millis},1,{key}\n'
+        # day, hour, minute, sec, millis, isDown, key, l_shift, r_shift\n
+        row = f'{time_str},{millis},{is_down},{key},{shifts_state}\n'
         return row
 
-    def log_release(self, event):
+    def log_release(self, event, shifts_state):
         t = datetime.now()
         key = event.char
         if key not in self.presses:
             return
-        self.presses[key].append(self.format_row(key, t))
-        both_rows = ''.join(self.presses[key])
-        if self.file.closed:
-            self.file = open('pylogs.csv')
-        self.file.write(both_rows)
+        self.presses[key].append(self.format_row(key, t, '0', shifts_state))
+        self.log += ''.join(self.presses[key])
         del self.presses[key]
 
-    def close(self, finished):
-        self.file.close()
-        self.completed_logs += finished
-        if finished == 1:
-            self.file = open(f'{"test_logs.csv"}', 'w')
-        return self.completed_logs == 1
+    def close(self):
+        with open(self.name, 'w') as file:
+            file.write('day,hour,minute,sec,millis,isDown,key,l_shift,r_shift\n' + self.log)
+        self.log = ''
+        return self.name
+
+    def open(self, param):
+        self.name = param
 
 
 if __name__ == "__main__":
-    logger = Logger()
-    editor = TextEditor(logger)
-    editor.root.protocol("WM_DELETE_WINDOW", on_closing)
+    editor = TextEditor()
+    editor.root.protocol("WM_DELETE_WINDOW", editor.on_closing)
     editor.mainloop()
-
