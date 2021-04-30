@@ -64,7 +64,7 @@ class TextEditor:
         with open(txt, 'r') as file:
             prompt = file.read().strip()
             file.close()
-        self.logger.open(f"{txt.split('.')[0]}.csv")
+        self.logger.open(f"{txt.split('.')[0].split('_')[0]}.csv")
         self.prompt.insert(1.0, prompt)
         self.prompt_words = self.next_words = self.get_words(self.prompt)
         self.prompt_ranges = self.get_ranges(self.prompt)
@@ -121,7 +121,7 @@ class TextEditor:
         shifts_state = f'{shifts["Shift_L"]},{shifts["Shift_R"]}'
         self.logger.log_press(event.keysym, shifts_state, t)
         if self.prompt.index(f'{self.size}-1c') == self.txt_in.index(f'{self.size}-1c'):
-            if self.logger.close() == 'train_prompt.csv':
+            if self.logger.close() == 'train.csv':
                 messagebox.showinfo('Training Complete', 'Now time for the test prompt.', parent=self.txt_in)
                 self.generate_prompt('test_prompt.txt')
                 self.txt_in.focus_force()
@@ -136,7 +136,6 @@ class TextEditor:
 
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.logger.close()
             editor.root.destroy()
 
     def get_words(self, txt):
@@ -162,19 +161,14 @@ class Logger:
     def log_press(self, key, shifts_state, t):
         if key in self.presses:
             return
-        self.presses[key] = [self.format_row(key, t, '1', shifts_state)]
-
-    def format_row(self, key, t, is_down, shifts_state):
-        # time, isDown, key, l_shift, r_shift\n
-        row = f'{t},{is_down},{key},{shifts_state}\n'
-        return row
+        self.presses[key] = [f'{t},1,{key},{shifts_state}\n']
 
     def log_release(self, event, shifts_state):
         t = time.time_ns()
         key = event.char
         if key not in self.presses:
             return
-        self.presses[key].append(self.format_row(key, t, '0', shifts_state))
+        self.presses[key].append(f'{t},0,{key},{shifts_state}\n')
         self.log += ''.join(self.presses[key])
         del self.presses[key]
 
