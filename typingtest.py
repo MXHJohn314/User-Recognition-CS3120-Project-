@@ -64,7 +64,7 @@ class TextEditor:
         with open(txt, 'r') as file:
             prompt = file.read().strip()
             file.close()
-        self.logger.open(f"{txt.split('.')[0]}.csv")
+        self.logger.open(f"{txt.split('.')[0].split('_')[0]}.csv")
         self.prompt.insert(1.0, prompt)
         self.prompt_words = self.next_words = self.get_words(self.prompt)
         self.prompt_ranges = self.get_ranges(self.prompt)
@@ -75,7 +75,6 @@ class TextEditor:
          and test phase to type only the last few chars of each prompt.'''
         # self.txt_in.insert(1.0, prompt[: len(prompt) - 5])
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white')
-        # self.prompt.tag_add('', '1.0', END)
         change_color(self.prompt, '', self.clrs['black'])
         self.txt_in.grid(row=2, column=0, padx=10, pady=10)
         self.prompt.grid(row=0, column=0, padx=10, pady=10)
@@ -86,20 +85,22 @@ class TextEditor:
         change_color(self.prompt, c['name'], self.clrs['white'])
         self.prompt.config(state='disabled')
 
-    def highlight_typed_words(self, forward):
-        string = self.txt_in.get('1.0', 'end').strip()
+    def highlight_typed_words(self, forward, is_space):
+        string = self.txt_in.get('1.0', 'end-1c')
         m2 = [_ for _ in re.findall(self.reg, string)]
         txt_in_tags = self.get_ranges(self.txt_in)
-        for a, b, (_s, _e), in zip(self.prompt_words, m2, txt_in_tags):
+        for a, b, (_s, _e) in zip(self.prompt_words, m2, txt_in_tags):
             name = f'{_s}-{_e}' if forward else f'{_s}-{self.txt_in.index(f"{_e}+1c")}'
             ok = self.clrs[a.startswith(b) or a == b]
             self.txt_in.tag_add(name, _s, _e)
             change_color(self.txt_in, f'{_s}-{_e}', ok)
             self.txt_in.tag_configure(name, foreground=ok['fg'], background=ok['bg'])
-        if self.current != len(m2) - 1:
-            change_color(self.prompt, self.get_current()['name'], self.clrs['black'])
-            self.current += 1 if forward else -1
-            change_color(self.prompt, self.get_current()['name'], self.clrs['white'])
+        if is_space:
+            c = self.get_current(len(txt_in_tags) - 2)
+            change_color(self.prompt, c['name'], self.clrs['black'])
+            self.current += 0 if c['word'].isspace() and self.txt_in.get('end-3c').isspace() else 1
+            c = self.get_current(len(txt_in_tags))
+            change_color(self.prompt, c['name'], self.clrs['white'])
 
     def get_ranges(self, t_):
         tags = []
@@ -116,24 +117,18 @@ class TextEditor:
         if event.keysym in bad_keys:
             self.txt_in.mark_set(INSERT, 'end-1c')
             return
-        if event.keysym == 'space':
-            c = self.get_current()
-            change_color(self.prompt, c['name'], self.clrs['black'])
-            self.current += 1
-            c = self.get_current()
-            change_color(self.prompt, c['name'], self.clrs['white'])
-        self.highlight_typed_words(event.keysym != 'BackSpace')
+        self.highlight_typed_words(event.keysym != 'BackSpace', event.keysym == 'space')
         shifts_state = f'{shifts["Shift_L"]},{shifts["Shift_R"]}'
         self.logger.log_press(event.keysym, shifts_state, t)
         if self.prompt.index(f'{self.size}-1c') == self.txt_in.index(f'{self.size}-1c'):
-            if self.logger.close() == 'train_prompt.csv':
+            if self.logger.close() == 'train.csv':
                 messagebox.showinfo('Training Complete', 'Now time for the test prompt.', parent=self.txt_in)
                 self.generate_prompt('test_prompt.txt')
                 self.txt_in.focus_force()
             else:
                 messagebox.showinfo(f'Testing Complete!',
                                     'Thanks for participating! Please contact'
-                                    ' AdaM Wojdyla or Malcolm Johnson to submit.', parent=self.root)
+                                    ' Adam Wojdyla or Malcolm Johnson to submit.', parent=self.root)
                 self.root.destroy()
 
     def mainloop(self):
@@ -141,15 +136,14 @@ class TextEditor:
 
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.logger.close()
             editor.root.destroy()
 
     def get_words(self, txt):
         return [_ for _ in re.findall(self.reg, txt.get('1.0', 'end'))]
 
-    def get_current(self):
-        c = self.prompt_ranges[self.current]
-        return {'word': self.prompt_words[self.current],
+    def get_current(self, i=0):
+        c = self.prompt_ranges[i]
+        return {'word': self.prompt_words[i],
                 's': c[0], 'e': c[1], 'name': f'{c[0]}-{c[1]}'}
 
 
@@ -167,19 +161,14 @@ class Logger:
     def log_press(self, key, shifts_state, t):
         if key in self.presses:
             return
-        self.presses[key] = [self.format_row(key, t, '1', shifts_state)]
-
-    def format_row(self, key, t, is_down, shifts_state):
-        # time, isDown, key, l_shift, r_shift\n
-        row = f'{t},{is_down},{key},{shifts_state}\n'
-        return row
+        self.presses[key] = [f'{t},1,{key},{shifts_state}\n']
 
     def log_release(self, event, shifts_state):
         t = time.time_ns()
         key = event.char
         if key not in self.presses:
             return
-        self.presses[key].append(self.format_row(key, t, '0', shifts_state))
+        self.presses[key].append(f'{t},0,{key},{shifts_state}\n')
         self.log += ''.join(self.presses[key])
         del self.presses[key]
 
