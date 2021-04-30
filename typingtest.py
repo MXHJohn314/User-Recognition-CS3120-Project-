@@ -13,6 +13,7 @@ bad_keys = {'XF86AudioPlay', 'XF86AudioLowerVolume', 'Win_L', 'Win_R',
             'Control_L', 'Control_R', 'Alt_L', 'Alt_R'}
 
 
+
 def shift_check(e):
     shifts[e.keysym] = '1' if '2' == e.type else '0'
 
@@ -46,7 +47,7 @@ class TextEditor:
         self.generate_prompt()
         messagebox.showinfo('Get Ready!', 'The test will begin now.', parent=self.txt_in)
         self.txt_in.focus_force()
-        chars = [_ for _ in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`1234567890-=~!@#$%^&*()_+[{]}\\|\'\";:,./?>"]
+        chars = [_ for _ in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=`~!@#$%^&*()_+[{]}\\|\'\";:,./?>"]
         self.root.bind('<Key>', self.check_text)
         self.root.bind('<KeyRelease>', lambda e: self.logger.log_release(e, ','.join(shifts.values())))
         [self.root.bind(i, self.check_text) for i in chars]
@@ -73,7 +74,7 @@ class TextEditor:
         self.size = self.prompt.index(self.prompt.index(f'end-1c'))
         '''For testing purposes. Use to shortcut the train
          and test phase to type only the last few chars of each prompt.'''
-        # self.txt_in.insert(1.0, prompt[: len(prompt) - 5])
+        self.txt_in.insert(1.0, prompt[: len(prompt) - 35])
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white')
         change_color(self.prompt, '', self.clrs['black'])
         self.txt_in.grid(row=2, column=0, padx=10, pady=10)
@@ -119,7 +120,7 @@ class TextEditor:
             return
         self.highlight_typed_words(event.keysym != 'BackSpace', event.keysym == 'space')
         shifts_state = f'{shifts["Shift_L"]},{shifts["Shift_R"]}'
-        self.logger.log_press(event.keysym, shifts_state, t)
+        self.logger.log_press(event.char, shifts_state, t)
         if self.prompt.index(f'{self.size}-1c') == self.txt_in.index(f'{self.size}-1c'):
             if self.logger.close() == 'train.csv':
                 messagebox.showinfo('Training Complete', 'Now time for the test prompt.', parent=self.txt_in)
@@ -159,6 +160,7 @@ class Logger:
         self.presses = {}
 
     def log_press(self, key, shifts_state, t):
+        # print(f'keypress={key}')
         if key in self.presses:
             return
         self.presses[key] = [f'{t},1,{key},{shifts_state}\n']
@@ -166,6 +168,7 @@ class Logger:
     def log_release(self, event, shifts_state):
         t = time.time_ns()
         key = event.char
+        # print(f'keyrelease={key}')
         if key not in self.presses:
             return
         self.presses[key].append(f'{t},0,{key},{shifts_state}\n')
