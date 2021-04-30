@@ -7,8 +7,8 @@ A user-recognition project powered by keyboard input data. This program uses fea
 1. Clone the repo: `git clone https://github.com/GalacticWafer/CS_3120_Project.git`
 2. Use your preferred method of running python files to run typingtest.py
 3. When the gui appears, start typing the prompt in the lower half of the window.
-4. There are two prompts to type. One is for model training, the other is for testing.
-5. After you complete both tests, send your `logs.csv` to us. You can use Teams if you're connected to us through MSU Denver, or send to one of the email addresses below.
+4. There are two prompts to type. One is for model training, the other is for testing. Errors are highlighted red. When you make an error, please correct it.
+5. After you complete both tests, send your `train.csv` and `test.csv` to us. You can use Teams if you're connected to us through MSU Denver, or send to one of the email addresses below.
 
 ### Maintainers
 - Malcolm Johnson mjohn314@msudenver.edu
