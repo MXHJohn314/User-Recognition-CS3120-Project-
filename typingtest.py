@@ -87,7 +87,7 @@ class TextEditor:
         self.prompt.config(state='disabled')
 
     def highlight_typed_words(self, forward):
-        string = self.txt_in.get('1.0', 'end').strip()
+        string = self.txt_in.get('1.0', 'end-1c')
         m2 = [_ for _ in re.findall(self.reg, string)]
         txt_in_tags = self.get_ranges(self.txt_in)
         for a, b, (_s, _e), in zip(self.prompt_words, m2, txt_in_tags):
@@ -119,7 +119,7 @@ class TextEditor:
         if event.keysym == 'space':
             c = self.get_current()
             change_color(self.prompt, c['name'], self.clrs['black'])
-            self.current += 1
+            self.current += 0 if c['word'].isspace() and self.txt_in.get('end-3c').isspace() else 1
             c = self.get_current()
             change_color(self.prompt, c['name'], self.clrs['white'])
         self.highlight_typed_words(event.keysym != 'BackSpace')
