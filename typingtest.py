@@ -49,13 +49,13 @@ class TextEditor:
         self.txt_in.focus_force()
         chars = [_ for _ in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=`~!@#$%^&*()_+[{]}\\|\'\";:,./?>"]
         self.root.bind('<Key>', self.check_text)
-        self.root.bind('<KeyRelease>', lambda e: self.logger.log_release(e, ','.join(shifts.values())))
+        self.root.bind('<KeyRelease>', lambda e: self.logger.log_release(e, '::'.join(shifts.values())))
         [self.root.bind(i, self.check_text) for i in chars]
         [self.root.bind(_, shift_check) for _ in ['<Shift_R>', '<Shift_L>', '<KeyRelease-Shift_L>', '<KeyRelease-Shift_R>']]
         [self.root.bind(_, self.txt_in.mark_set(INSERT, 'end-1c')) for _ in ['<Button-1>', '<Button-2>', '<Button-3>']]
-        [self.root.bind(i, self.check_text) for i in ['less', 'BackSpace', 'space', 'Caps_Lock']]
+        [self.root.bind(i, self.check_text) for i in specials]
         [self.root.bind(f'<KeyRelease-{i}>', self.check_text) for i in specials]
-        [self.root.bind(f'<KeyRelease-{i}>', lambda e: self.logger.log_release(e, ','.join(shifts.values()))) for i in specials]
+        [self.root.bind(f'<KeyRelease-{i}>', lambda e: self.logger.log_release(e, '::'.join(shifts.values()))) for i in specials]
         self.root.bind('Control-v', 'break')
 
     def generate_prompt(self, txt='train_prompt.txt'):
@@ -119,7 +119,7 @@ class TextEditor:
             self.txt_in.mark_set(INSERT, 'end-1c')
             return
         self.highlight_typed_words(event.keysym != 'BackSpace', event.keysym == 'space')
-        shifts_state = f'{shifts["Shift_L"]},{shifts["Shift_R"]}'
+        shifts_state = f'{shifts["Shift_L"]}::{shifts["Shift_R"]}'
         self.logger.log_press(event.char, shifts_state, t)
         if self.prompt.index(f'{self.size}-1c') == self.txt_in.index(f'{self.size}-1c'):
             if self.logger.close() == 'train.csv':
@@ -163,22 +163,23 @@ class Logger:
         # print(f'keypress={key}')
         if key in self.presses:
             return
-        self.presses[key] = [f'{t},1,{key},{shifts_state}\n']
+        key = 'backspace' if key == '\b' else key
+        self.presses[key] = [f'{t}::1::{key}::{shifts_state}\n']
 
     def log_release(self, event, shifts_state):
         t = time.time_ns()
-        key = event.char
+        key = event.char if event.char != '' else 'backspace'
         # print(f'keyrelease={key}')
         if key not in self.presses:
             return
-        self.presses[key].append(f'{t},0,{key},{shifts_state}\n')
+        self.presses[key].append(f'{t}::0::{key}::{shifts_state}\n')
         self.log += ''.join(self.presses[key])
         del self.presses[key]
 
     def close(self):
         with open(self.name, 'w') as file:
-            file.write('time,isDown,key,l_shift,r_shift\n' + self.log)
-        print('time,isDown,key,l_shift,r_shift\n' + self.log + '\n\n')
+            file.write('time::isDown::key::l_shift::r_shift\n' + self.log)
+        print('time::isDown::key::l_shift::r_shift\n' + self.log + '\n\n')
         self.log = ''
         return self.name
 
