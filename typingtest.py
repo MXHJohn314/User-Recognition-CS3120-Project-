@@ -73,7 +73,7 @@ class TextEditor:
         self.size = self.prompt.index(self.prompt.index(f'end-1c'))
         '''For testing purposes. Use to shortcut the train
          and test phase to type only the last few chars of each prompt.'''
-        self.txt_in.insert(1.0, prompt[: len(prompt) - 5])
+        # self.txt_in.insert(1.0, prompt[: len(prompt) - 5])
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white')
         change_color(self.prompt, '', self.clrs['black'])
         self.txt_in.grid(row=2, column=0, padx=10, pady=10)
