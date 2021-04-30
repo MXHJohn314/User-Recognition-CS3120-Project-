@@ -73,9 +73,8 @@ class TextEditor:
         self.size = self.prompt.index(self.prompt.index(f'end-1c'))
         '''For testing purposes. Use to shortcut the train
          and test phase to type only the last few chars of each prompt.'''
-        # self.txt_in.insert(1.0, prompt[: len(prompt) - 5])
+        self.txt_in.insert(1.0, prompt[: len(prompt) - 5])
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white')
-        # self.prompt.tag_add('', '1.0', END)
         change_color(self.prompt, '', self.clrs['black'])
         self.txt_in.grid(row=2, column=0, padx=10, pady=10)
         self.prompt.grid(row=0, column=0, padx=10, pady=10)
@@ -86,20 +85,22 @@ class TextEditor:
         change_color(self.prompt, c['name'], self.clrs['white'])
         self.prompt.config(state='disabled')
 
-    def highlight_typed_words(self, forward):
+    def highlight_typed_words(self, forward, is_space):
         string = self.txt_in.get('1.0', 'end-1c')
         m2 = [_ for _ in re.findall(self.reg, string)]
         txt_in_tags = self.get_ranges(self.txt_in)
-        for a, b, (_s, _e), in zip(self.prompt_words, m2, txt_in_tags):
+        for a, b, (_s, _e) in zip(self.prompt_words, m2, txt_in_tags):
             name = f'{_s}-{_e}' if forward else f'{_s}-{self.txt_in.index(f"{_e}+1c")}'
             ok = self.clrs[a.startswith(b) or a == b]
             self.txt_in.tag_add(name, _s, _e)
             change_color(self.txt_in, f'{_s}-{_e}', ok)
             self.txt_in.tag_configure(name, foreground=ok['fg'], background=ok['bg'])
-        if self.current != len(m2) - 1:
-            change_color(self.prompt, self.get_current()['name'], self.clrs['black'])
-            self.current += 1 if forward else -1
-            change_color(self.prompt, self.get_current()['name'], self.clrs['white'])
+        if is_space:
+            c = self.get_current(len(txt_in_tags) - 2)
+            change_color(self.prompt, c['name'], self.clrs['black'])
+            self.current += 0 if c['word'].isspace() and self.txt_in.get('end-3c').isspace() else 1
+            c = self.get_current(len(txt_in_tags))
+            change_color(self.prompt, c['name'], self.clrs['white'])
 
     def get_ranges(self, t_):
         tags = []
@@ -116,13 +117,7 @@ class TextEditor:
         if event.keysym in bad_keys:
             self.txt_in.mark_set(INSERT, 'end-1c')
             return
-        if event.keysym == 'space':
-            c = self.get_current()
-            change_color(self.prompt, c['name'], self.clrs['black'])
-            self.current += 0 if c['word'].isspace() and self.txt_in.get('end-3c').isspace() else 1
-            c = self.get_current()
-            change_color(self.prompt, c['name'], self.clrs['white'])
-        self.highlight_typed_words(event.keysym != 'BackSpace')
+        self.highlight_typed_words(event.keysym != 'BackSpace', event.keysym == 'space')
         shifts_state = f'{shifts["Shift_L"]},{shifts["Shift_R"]}'
         self.logger.log_press(event.keysym, shifts_state, t)
         if self.prompt.index(f'{self.size}-1c') == self.txt_in.index(f'{self.size}-1c'):
@@ -133,7 +128,7 @@ class TextEditor:
             else:
                 messagebox.showinfo(f'Testing Complete!',
                                     'Thanks for participating! Please contact'
-                                    ' AdaM Wojdyla or Malcolm Johnson to submit.', parent=self.root)
+                                    ' Adam Wojdyla or Malcolm Johnson to submit.', parent=self.root)
                 self.root.destroy()
 
     def mainloop(self):
@@ -147,9 +142,9 @@ class TextEditor:
     def get_words(self, txt):
         return [_ for _ in re.findall(self.reg, txt.get('1.0', 'end'))]
 
-    def get_current(self):
-        c = self.prompt_ranges[self.current]
-        return {'word': self.prompt_words[self.current],
+    def get_current(self, i=0):
+        c = self.prompt_ranges[i]
+        return {'word': self.prompt_words[i],
                 's': c[0], 'e': c[1], 'name': f'{c[0]}-{c[1]}'}
 
 
