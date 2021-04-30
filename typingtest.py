@@ -4,6 +4,7 @@ from tkinter import messagebox
 import re
 import time
 
+word_regex = re.compile(r'(\s+|\S+)')
 specials = ['less', 'BackSpace', 'space', 'Caps_Lock']
 shifts = {'Shift_L': '0', 'Shift_R': '0'}
 bad_keys = {'XF86AudioPlay', 'XF86AudioLowerVolume', 'Win_L', 'Win_R',
@@ -11,7 +12,6 @@ bad_keys = {'XF86AudioPlay', 'XF86AudioLowerVolume', 'Win_L', 'Win_R',
             'Shift_R', 'Escape', 'Delete', 'Left', 'Up', 'Down',
             'Right', 'Home', 'Prior', 'End', 'Next', 'Insert', 'App',
             'Control_L', 'Control_R', 'Alt_L', 'Alt_R'}
-
 
 
 def shift_check(e):
@@ -25,7 +25,6 @@ def change_color(txt, name, color):
 class TextEditor:
     def __init__(self):
         self.prompt_ranges = self.prompt_words = self.size = self.current = None
-        self.reg = re.compile(r'(\s+|\S+)')
         self.prev_words = self.next_words = []
         self.logger = Logger()
         self.clrs = {
@@ -47,15 +46,21 @@ class TextEditor:
         self.generate_prompt()
         messagebox.showinfo('Get Ready!', 'The test will begin now.', parent=self.txt_in)
         self.txt_in.focus_force()
-        chars = [_ for _ in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=`~!@#$%^&*()_+[{]}\\|\'\";:,./?>"]
+        chars = [_ for _ in
+                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=`~!@#$%^&*()_+[{]}\\|\'\";:,./?>"]
         self.root.bind('<Key>', self.check_text)
-        self.root.bind('<KeyRelease>', lambda e: self.logger.log_release(e, '::'.join(shifts.values())))
+        self.root.bind('<KeyRelease>',
+                       lambda e: self.logger.log_release(e, '::'.join(shifts.values())))
         [self.root.bind(i, self.check_text) for i in chars]
-        [self.root.bind(_, shift_check) for _ in ['<Shift_R>', '<Shift_L>', '<KeyRelease-Shift_L>', '<KeyRelease-Shift_R>']]
-        [self.root.bind(_, self.txt_in.mark_set(INSERT, 'end-1c')) for _ in ['<Button-1>', '<Button-2>', '<Button-3>']]
+        [self.root.bind(_, shift_check) for _ in
+         ['<Shift_R>', '<Shift_L>', '<KeyRelease-Shift_L>', '<KeyRelease-Shift_R>']]
+        [self.root.bind(_, self.txt_in.mark_set(INSERT, 'end-1c')) for _ in
+         ['<Button-1>', '<Button-2>', '<Button-3>']]
         [self.root.bind(i, self.check_text) for i in specials]
         [self.root.bind(f'<KeyRelease-{i}>', self.check_text) for i in specials]
-        [self.root.bind(f'<KeyRelease-{i}>', lambda e: self.logger.log_release(e, '::'.join(shifts.values()))) for i in specials]
+        [self.root.bind(f'<KeyRelease-{i}>',
+                        lambda e: self.logger.log_release(e, '::'.join(shifts.values()))) for i in
+         specials]
         self.root.bind('Control-v', 'break')
 
     def generate_prompt(self, txt='train_prompt.txt'):
@@ -74,7 +79,7 @@ class TextEditor:
         self.size = self.prompt.index(self.prompt.index(f'end-1c'))
         '''For testing purposes. Use to shortcut the train
          and test phase to type only the last few chars of each prompt.'''
-        self.txt_in.insert(1.0, prompt[: len(prompt) - 35])
+        # self.txt_in.insert(1.0, prompt[: len(prompt) - 35])
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white')
         change_color(self.prompt, '', self.clrs['black'])
         self.txt_in.grid(row=2, column=0, padx=10, pady=10)
@@ -87,10 +92,12 @@ class TextEditor:
         self.prompt.config(state='disabled')
 
     def highlight_typed_words(self, forward, is_space):
-        string = self.txt_in.get('1.0', 'end-1c')
-        m2 = [_ for _ in re.findall(self.reg, string)]
-        txt_in_tags = self.get_ranges(self.txt_in)
-        for a, b, (_s, _e) in zip(self.prompt_words, m2, txt_in_tags):
+        string = self.txt_in.get('1.0', 'end')
+        string_ = [_ for _ in re.findall(word_regex, string)]
+        m2 = string_[-4:-1]
+        txt_in_tags = self.get_ranges(self.txt_in)[-4:-1]
+        words = self.prompt_words[len(string_) - 4: len(string_) - 1]
+        for a, b, (_s, _e) in zip(words, m2, txt_in_tags):
             name = f'{_s}-{_e}' if forward else f'{_s}-{self.txt_in.index(f"{_e}+1c")}'
             ok = self.clrs[a.startswith(b) or a == b]
             self.txt_in.tag_add(name, _s, _e)
@@ -123,7 +130,8 @@ class TextEditor:
         self.logger.log_press(event.char, shifts_state, t)
         if self.prompt.index(f'{self.size}-1c') == self.txt_in.index(f'{self.size}-1c'):
             if self.logger.close() == 'train.csv':
-                messagebox.showinfo('Training Complete', 'Now time for the test prompt.', parent=self.txt_in)
+                messagebox.showinfo('Training Complete', 'Now time for the test prompt.',
+                                    parent=self.txt_in)
                 self.generate_prompt('test_prompt.txt')
                 self.txt_in.focus_force()
             else:
@@ -140,7 +148,7 @@ class TextEditor:
             editor.root.destroy()
 
     def get_words(self, txt):
-        return [_ for _ in re.findall(self.reg, txt.get('1.0', 'end'))]
+        return [_ for _ in re.findall(word_regex, txt.get('1.0', 'end'))]
 
     def get_current(self, i=0):
         c = self.prompt_ranges[i]
