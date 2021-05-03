@@ -1,3 +1,4 @@
+import re
 import pandas as pd
 
 
@@ -31,13 +32,23 @@ class DataScraper:
         train_frame = pd.read_csv('scape_train.csv', delimiter='::', engine='python')
         avg_hold, avg_up_down = get_avg_hold_time(train_list)
         user_input, error_count = get_error_count(train_list)
+        user_split = [i for i in re.findall(r'(\s+|\S+)', user_input)]
+        prompt_split = [i for i in re.findall(r'(\s+|\S+)', open('scape_train.csv').read())]
+        missed_words = 0
+        for a, b in zip(user_split, prompt_split):
+            if a != b: missed_words += 1
+        l_sum = train_frame['l_shift'].sum()
+        r_sum = train_frame['r_shift'].sum()
+        print('shift sum: ', l_sum / r_sum)
+
+
         avg_up_up = self.get_avg_up_up(train_frame)
         # Todo lshift/rshift ratio
         # Todo train time
         # Todo test time
         # Todo train/test ratio
         # Todo mistake ratio/expected errors
-        # Tod o most accurate keys ranking
+        # Todo most accurate keys ranking
         self.results = f'Average key press time: {avg_hold} sec\n' \
                        f'Average key rollover duration: {avg_up_down} sec\n' \
                        f'Average time between key releases: {avg_up_up}\n' \
@@ -52,7 +63,7 @@ class DataScraper:
     def __str__(self):
         return self.results
 
-    # Todod error count - number of times pressed backspace
+    # Todod error count: number of times pressed backspace
     #  user_string = the full string that was created by the user.
 
     # Todod average key down time
