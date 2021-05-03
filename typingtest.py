@@ -48,7 +48,7 @@ def change_color(txt, name, color):
 def get_ranges(t_):
     tags = []
     s_ = '1.0'
-    for match in re.finditer(r'(\s+|\S+)', t_.get('1.0', 'end-1c')):
+    for match in re.finditer(word_regex, t_.get('1.0', 'end-1c')):
         str_len = match.end() - match.start()
         e_ = t_.index(f'{s_}+{str_len}c')
         tags.append((s_, e_))
@@ -77,7 +77,6 @@ class TypingTest:
         self.logger = Logger()  # Stores info on keystrokes to a file
         self.prompt_dict = None  # Indexes every word in the prompt for highlighting
         self.usr_in_dict = None  # Indexes every word typed by the user for highlighting
-        self.prompt_words = None  # List of words typed by user, parallel to self.txt_ranges
         self.size = None  # Count of # of words typed by the user, to tell when the test is over.
         self.prompt = Text(height=14, font=("Arial", 10))  # Words to type will appear here
         self.usr_in = Text(height=14, font=("Arial", 10))  # User input will appear here
@@ -90,16 +89,11 @@ class TypingTest:
         # bnd('<Key>', 'break')
         usr_bnd = self.usr_in.bind
         release = self.logger.log_release
-        
         [bnd(i, self.check_text) for i in chars]
         [bnd(_, shift_check) for _ in shift_events]
-        
-        # [bnd(f'<KeyRelease-{i}>', self.check_text) for i in specials]
         [usr_bnd(f'<{_}>', 'break') for _ in ignored_keys]
-        [bnd(f'<{_}>', 'break') for _ in ignored_keys]
-        
+        [bnd(f'<{_}>', 'break') for _ in ignored_keys]        
         [bnd(f'<{i}>', self.check_text) for i in spacers]
-        
         bnd('<KeyRelease>', lambda e: release(e, '::'.join(shifts.values())))
 
     #  Set up the typing test for use.
@@ -110,11 +104,11 @@ class TypingTest:
         with open(txt, 'r') as file: prompt = file.read().strip()  # Get text to be inserted
         self.logger.open(f"{txt.split('.')[0].split('_')[0]}.csv")  # Name the logger output
         self.prompt.insert(1.0, prompt)  # Fill the top text widget with the prompt
-        self.prompt_words = get_words(self.prompt)  # Use regex to get all words
+        prompt_words = get_words(self.prompt)  # Use regex to get all words
         self.prompt_dict = get_ranges(self.prompt)  # Get widget string indices for word bounds
         self.usr_in_dict = get_ranges(self.prompt)  # will be checked against prompt_dict for changes
         #  Change list of tuples into list of dictionaries with ordered indices of words & ranges
-        for i, (r, w) in enumerate(zip(self.prompt_dict, self.prompt_words)):
+        for i, (r, w) in enumerate(zip(self.prompt_dict, prompt_words)):
             s, e = r
             self.usr_in_dict[i] = {'tag': f'{(s, e)}', 'word': w, 's': s, 'e': e}
             self.prompt_dict[i] = {'tag': f'{(s, e)}', 'word': w, 's': s, 'e': e}
@@ -140,7 +134,7 @@ class TypingTest:
         txt_ranges = get_ranges(self.usr_in)  # Get updated list of user input words/ranges
         txt_words = get_words(self.usr_in)
 
-        # Update the user input dictionary for words `current-1` through `current+2`
+        # Update the user input dictionary for words near current
         start = max(self.current - 2, 0)
         end = min(self.current + 3, len(txt_ranges))
         _zip = zip(
@@ -181,7 +175,7 @@ class TypingTest:
                 start = int(user_entry['s'].split('.')[1])
                 if insert < start:
                     self.current -= 2  # Go back to last word
-                    self.highlight_typed_words('')  # recurse this method with to fix highlighting
+                    self.highlight_typed_words('')  # recurse this method to fix highlighting
                 else:  # If still on same word, update the user_in_dict with new range
                     color = colors[prompt_entry['word'].startswith(user_entry['word'])]
                     change_color(self.usr_in, user_entry['tag'], color)
@@ -244,18 +238,18 @@ class Logger:
 
     # Format the row for KeyDown info and store it in the buffer
     def log_press(self, key, shifts_state, t):
-        if key in self.event_buffer: return
-        key = 'backspace' if key == '\b' else key
-        self.event_buffer[key] = (t, f'{key}::{shifts_state}\n')
+        if key in self.event_buffer: return  # prevents repeat logs when holding a key
+        key = 'backspace' if key == '\b' else key  #  writing '\b' to a file is trouble
+        self.event_buffer[key] = (t, f'{key}::{shifts_state}\n')  # store down event
 
     # Format the row for KeyRelease info if a matching down event exists in the buffer
     def log_release(self, event, shifts_state):
         t = time.time_ns()
-        key = event.char if event.char != '' else 'backspace'
-        if key not in self.event_buffer: return
-        entry = self.event_buffer[key]
-        self.log += f'{entry[0]}::{t}::{entry[1]}'
-        del self.event_buffer[key]
+        key = event.char if event.char != '' else 'backspace'  # backspace shenanigans
+        if key not in self.event_buffer: return  # prevents repeat logs when releasing a key
+        entry = self.event_buffer[key]  # get the matching down event from the buffer
+        self.log += f'{entry[0]}::{t}::{entry[1]}'  # concat key event info to log
+        del self.event_buffer[key]  # delete the key from the buffer
 
     # Write contents stored in log to a file, and return the file name created.
     def close(self):
