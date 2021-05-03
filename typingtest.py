@@ -68,9 +68,6 @@ def get_words(txt):
 
 class TypingTest:
     def __init__(self):
-        """For debugging towards the end of the prompt, use self.current = 468.
-        For normal functionality, set self.current = 0"""
-        # self.current = 468
         self.current = 0  # keeps track of the current word or space that should be typed.
         self.root = Tk()  # Gui root window object
         self.root.title("Typing Test")
@@ -83,16 +80,14 @@ class TypingTest:
         self.generate_prompt()  # Fill self.prompt with the first test, and index the words.
         messagebox.showinfo('Get Ready!', 'The test will begin now.', parent=self.usr_in)
         self.usr_in.focus_force()  # User should only be able to edit the bottom half.
-
         #  Set key binds for all keys and combos (ignore keys we don't care about)
         bnd = self.root.bind
-        # bnd('<Key>', 'break')
         usr_bnd = self.usr_in.bind
         release = self.logger.log_release
         [bnd(i, self.check_text) for i in chars]
         [bnd(_, shift_check) for _ in shift_events]
         [usr_bnd(f'<{_}>', 'break') for _ in ignored_keys]
-        [bnd(f'<{_}>', 'break') for _ in ignored_keys]        
+        [bnd(f'<{_}>', 'break') for _ in ignored_keys]
         [bnd(f'<{i}>', self.check_text) for i in spacers]
         bnd('<KeyRelease>', lambda e: release(e, '::'.join(shifts.values())))
 
@@ -115,8 +110,12 @@ class TypingTest:
             r = {'tag': f'{(s, e)}', 'word': w, 's': s, 'e': e}
             self.prompt.tag_add(r['tag'], s, e)
         self.size = self.prompt.index(self.prompt.index(f'end-1c'))  # Store text size
-        '''For debugging toward the end of the prompt, uncomment the next line.'''
-        # self.usr_in.insert(1.0, prompt[: len(prompt) - 10])
+
+        '''!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        For debugging toward the end of the prompt, uncomment the next two lines.'''
+        # self.usr_in.insert(1.0, ''.join(prompt_words[:-8]))
+        # self.current = len(prompt_words) - 8
+
         # Configure prompt and user input widget options, colorize the first word to type.
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white')
         change_color(self.prompt, '', colors['black'])
@@ -142,6 +141,7 @@ class TypingTest:
             txt_ranges[start:end],
             txt_words[start:end])
         for i, (start_, end_), word in _zip:
+            if i > len(self.usr_in_dict) - 1: return False
             txt = self.usr_in_dict[i]
             self.usr_in.tag_remove(txt['tag'], txt['s'], txt['e'])
             self.usr_in_dict[i]['word'] = word
@@ -162,6 +162,7 @@ class TypingTest:
                 self.current -= 1
                 txt = self.usr_in_dict[self.current]
                 change_color(self.usr_in, txt['tag'], colors[False])
+                self.highlight_typed_words('')  # recurse this method to fix highlighting
         else:  # User should be typing non-space character
             if key.isspace():  # Prematurely went to word, highlight word red and go to next word
                 txt = self.usr_in_dict[self.current]
@@ -239,7 +240,7 @@ class Logger:
     # Format the row for KeyDown info and store it in the buffer
     def log_press(self, key, shifts_state, t):
         if key in self.event_buffer: return  # prevents repeat logs when holding a key
-        key = 'backspace' if key == '\b' else key  #  writing '\b' to a file is trouble
+        key = 'backspace' if key == '\b' else key  # writing '\b' to a file is trouble
         self.event_buffer[key] = (t, f'{key}::{shifts_state}\n')  # store down event
 
     # Format the row for KeyRelease info if a matching down event exists in the buffer
