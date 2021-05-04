@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 import re
 import time
-
+import json
 from DataScraper import DataScraper
 
 '''csv column names header'''
@@ -16,13 +16,13 @@ chars = {_ for _ in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRS" \
 spacers = {'BackSpace', 'space'}
 '''Small dictionary that keeps track of which shift keys are being held at any moment.'''
 shifts = {'Shift_L': '0', 'Shift_R': '0'}
-shift_events = {'<Shift_R>', '<Shift_L>', '<KeyRelease-Shift_L>', '<KeyRelease-Shift_R>'}
+shift_presses = {'<Shift_R>', '<Shift_L>', '<KeyRelease-Shift_L>', '<KeyRelease-Shift_R>'}
 '''Set of keys should be ignored by the program.'''
 ignored_keys = {'XF86AudioPlay', 'XF86AudioLowerVolume', 'Win_L', 'Win_R',
                 'XF86AudioRaiseVolume', 'XF86AudioMute', 'Escape', 'Delete',
                 'Left', 'Up', 'Down', 'Right', 'Home', 'Prior', 'End', 'Next',
                 'Insert', 'App', 'Control_L', 'Control_R', 'Alt_L', 'Alt_R',
-                'Return', 'Control-v', 'Control-a', 'Control-c', 'Return'}\
+                'Return', 'Control-v', 'Control-a', 'Control-c', 'Return'} \
                | set([_ for __ in [[f'Button-{i}', f'Double-Button-{i}']
                                    for i in range(1, 4)] for _ in __])
 '''Dictionary to simplify colorization.'''
@@ -36,8 +36,11 @@ colors = {
 
 #  Return "1" if shift key is down, otherwise "0"
 def shift_check(e):
-    shifts[e.keysym] = '1' if '2' == e.type else '0'
-
+    if e.type == '2':
+        shifts[e.keysym] = '1'
+    elif e.type == '3':
+        key = 'Shift_L' if shifts['Shift_L'] == '1' else 'Shift_R'
+        shifts[key] = '0'
 
 #  Used to simplify colorization of text in either of the Text widgets.
 def change_color(txt, name, color):
@@ -68,6 +71,7 @@ def get_words(txt):
 
 class TypingTest:
     def __init__(self):
+        self.data = {}  # Hold some previous word data about typing correctness
         self.current = 0  # keeps track of the current word or space that should be typed.
         self.root = Tk()  # Gui root window object
         self.root.title("Typing Test")
@@ -85,7 +89,7 @@ class TypingTest:
         usr_bnd = self.usr_in.bind
         release = self.logger.log_release
         [bnd(i, self.check_text) for i in chars]
-        [bnd(_, shift_check) for _ in shift_events]
+        [bnd(_, shift_check) for _ in shift_presses]
         [usr_bnd(f'<{_}>', 'break') for _ in ignored_keys]
         [bnd(f'<{_}>', 'break') for _ in ignored_keys]
         [bnd(f'<{i}>', self.check_text) for i in spacers]
@@ -155,17 +159,21 @@ class TypingTest:
         if prompt_entry['word'].isspace():  # User should be typing a space
             if key.isspace():
                 txt = self.usr_in_dict[self.current]
+                txt['is_correct'] = True
                 change_color(self.usr_in, txt['tag'], colors[True])
                 self.current += 1
-            elif key == '\b': self.current -= 1  # If backspace typed, go back to the previous word
+            elif key == '\b':
+                self.current -= 1  # If backspace typed, go back to the previous word
             else:  # Otherwise they added extra stuff to the last word, highlight the word red
                 self.current -= 1
                 txt = self.usr_in_dict[self.current]
+                txt['is_correct'] = False
                 change_color(self.usr_in, txt['tag'], colors[False])
                 self.highlight_typed_words('')  # recurse this method to fix highlighting
         else:  # User should be typing non-space character
             if key.isspace():  # Prematurely went to word, highlight word red and go to next word
                 txt = self.usr_in_dict[self.current]
+                txt['is_correct'] = False
                 change_color(self.usr_in, txt['tag'], colors[False])
                 self.current += 1
                 txt = self.usr_in_dict[self.current]
@@ -185,11 +193,13 @@ class TypingTest:
             elif prompt_entry['word'].startswith(user_entry['word']):  # User typed correct char
                 txt = self.usr_in_dict[self.current]
                 change_color(self.usr_in, txt['tag'], colors[True])
+                txt['is_correct'] = True
                 if prompt_entry['word'] == user_entry['word']:  # If word is complete, move on
                     self.current += 1
             else:  # Key pressed was the wrong character, highlight current word red
                 txt = self.usr_in_dict[self.current]
                 change_color(self.usr_in, txt['tag'], colors[False])
+                txt['is_correct'] = False
         if self.current > len(self.prompt_dict) - 1: return False
         prompt_entry = self.prompt_dict[self.current]  # Get current prompt_dict entry
         change_color(self.prompt, prompt_entry['tag'], colors['white'])  # Highlight it in prompt
@@ -206,23 +216,24 @@ class TypingTest:
         t = time.time_ns()
         shifts_state = f'{shifts["Shift_L"]}::{shifts["Shift_R"]}'
         self.logger.log_press(event.char, shifts_state, t)
-        if self.prompt.index(f'{self.size}-1c') == self.usr_in.index(f'{self.size}-1c')\
+        print([_ == '1' for _ in shifts_state.split('::')])
+        if self.prompt.index(f'{self.size}-1c') == self.usr_in.index(f'{self.size}-1c') \
                 or not self.highlight_typed_words(event.char):
-            if self.logger.close() == 'train.csv':
-                """For debugging towards the end of the prompt, use self.current = 428.
-                For normal functionality, set self.current = 0"""
-                # self.current = 428
-                self.current = 0
-                messagebox.showinfo('Warm Up Complete', 'Now time for the Real Prompt!',
-                                    parent=self.usr_in)
-                self.generate_prompt('test_prompt.txt')
-                self.usr_in.focus_force()
-            else:
-                scraper = DataScraper()
-                messagebox.showinfo(f'Testing Complete!', f'{scraper}', parent=self.root)
-                messagebox.showinfo(f'Thank You', 'Thanks for participating! Please contact'
-                                                  ' Adam Wojdyla or Malcolm Johnson to submit.', parent=self.root)
-                self.root.destroy()
+            file_name = self.logger.name
+            """For debugging towards the end of the prompt, use self.current = 428.
+            For normal functionality, set self.current = 0"""
+            # self.current = 428
+            self.current = 0
+            messagebox.showinfo('Warm Up Complete', 'Now time for the Real Prompt!',
+                                parent=self.usr_in)
+            self.generate_prompt('test_prompt.txt')
+            self.usr_in.focus_force()
+        else:
+            scraper = DataScraper(self.data)
+            messagebox.showinfo(f'Testing Complete!', f'{scraper}', parent=self.root)
+            messagebox.showinfo(f'Thank You', 'Thanks for participating! Please contact'
+                                              ' Adam Wojdyla or Malcolm Johnson to submit.', parent=self.root)
+            self.root.destroy()
 
     #  Prevent the window from closing automatically
     def mainloop(self): self.root.mainloop()
