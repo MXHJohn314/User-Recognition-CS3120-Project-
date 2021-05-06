@@ -2,23 +2,28 @@
 
 A user-recognition project powered by keyboard input data. This program uses features discerned from data collected by volunteers. Our processes will explore several elementary techniques of machine learning.
                 
+## Requirements 
 
-## Instructions
-1. Clone the repo: `git clone https://github.com/GalacticWafer/CS_3120_Project.git`
-2. Use your preferred method of running python files to run typingtest.py
-3. When the gui appears, start typing the prompt in the lower half of the window.
-4. There are two prompts to type. One is for model training, the other is for testing. Errors are highlighted red. When you make an error, please correct it.
-5. After you complete both tests, send your `train.csv` and `test.csv` to us. You can use Teams if you're connected to us through MSU Denver, or send to one of the email addresses below.
+### Python 3.4 or higher
 
-### Maintainers
-- Malcolm Johnson mjohn314@msudenver.edu
-- Adam Wojdyla awojdyl2@msudenver.edu
-
-## Required Python Modules
+### Python Modules
 - tkinter
 - re
 - time
 - datetime
+
+
+## Instructions
+1. Clone the repo: `https://github.com/GalacticWafer/CS_3120_Project.git`
+2. Use your preferred method of running python files to run typingtest.py
+  + Note: If you are on a Linux distribution or running a non-standart Python installation, you may need to run `pip install tkinter`
+4. When the gui appears, start typing the prompt in the lower half of the window, just like a typing test.
+5. There are two prompts to type. One is for model training, the other is for testing. Errors are highlighted red.
+6. After you complete both tests, send your `train.csv` and `test.csv` to us. You can use Teams if you're connected to us through MSU Denver, or send to one of the email addresses below.
+
+### Maintainers
+- Malcolm Johnson mjohn314@msudenver.edu
+- Adam Wojdyla awojdyl2@msudenver.edu
 
 All modules needed are pre-installed unless you're on linux. In that case, use your package manager to install `python3-tk`. ex: with Ubuntu: `sudo apt-get install python3-tk`
              
