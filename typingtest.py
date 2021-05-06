@@ -18,10 +18,9 @@ spacers = {'BackSpace', 'space'}
 shifts = {'Shift_L': '0', 'Shift_R': '0'}
 shift_presses = {'<Shift_R>', '<Shift_L>', '<KeyRelease-Shift_L>', '<KeyRelease-Shift_R>'}
 '''Set of keys should be ignored by the program.'''
-ignored_keys = {'XF86AudioPlay', 'XF86AudioLowerVolume', 'Win_L', 'Win_R',
-                'XF86AudioRaiseVolume', 'XF86AudioMute', 'Escape', 'Delete',
+ignored_keys = {'Escape', 'Delete',
                 'Left', 'Up', 'Down', 'Right', 'Home', 'Prior', 'End', 'Next',
-                'Insert', 'App', 'Control_L', 'Control_R', 'Alt_L', 'Alt_R',
+                'Insert', 'Control_L', 'Control_R', 'Alt_L', 'Alt_R',
                 'Return', 'Control-v', 'Control-a', 'Control-c', 'Return'} \
                | set([_ for __ in [[f'Button-{i}', f'Double-Button-{i}']
                                    for i in range(1, 4)] for _ in __])
