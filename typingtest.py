@@ -117,8 +117,8 @@ class TypingTest:
 
         '''!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         For debugging toward the end of the prompt, uncomment the next two lines.'''
-        self.usr_in.insert(1.0, ''.join(prompt_words[:-8]))
-        self.current = len(prompt_words) - 8
+        # self.usr_in.insert(1.0, ''.join(prompt_words[:-8]))
+        # self.current = len(prompt_words) - 8
 
         # Configure prompt and user input widget options, colorize the first word to type.
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white')
@@ -229,7 +229,7 @@ class TypingTest:
             self.generate_prompt('test_prompt.txt')
             self.usr_in.focus_force()
         else:
-            scraper = DataScraper(self.data)
+            scraper = DataScraper()
             messagebox.showinfo(f'Testing Complete!', f'{scraper}', parent=self.root)
             messagebox.showinfo(f'Thank You', 'Thanks for participating! Please contact'
                                               ' Adam Wojdyla or Malcolm Johnson to submit.', parent=self.root)
@@ -280,3 +280,6 @@ if __name__ == "__main__":
     editor = TypingTest()
     editor.root.protocol("WM_DELETE_WINDOW", on_closing)
     editor.mainloop()
+
+
+
