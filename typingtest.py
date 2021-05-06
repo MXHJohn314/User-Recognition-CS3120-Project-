@@ -117,8 +117,8 @@ class TypingTest:
 
         '''!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         For debugging toward the end of the prompt, uncomment the next two lines.'''
-        # self.usr_in.insert(1.0, ''.join(prompt_words[:-8]))
-        # self.current = len(prompt_words) - 8
+        # self.usr_in.insert(1.0, ''.join(prompt_words[:-3]))
+        # self.current = len(prompt_words) - 3
 
         # Configure prompt and user input widget options, colorize the first word to type.
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white')
@@ -217,22 +217,25 @@ class TypingTest:
         shifts_state = f'{shifts["Shift_L"]}::{shifts["Shift_R"]}'
         self.logger.log_press(event.char, shifts_state, t)
         print([_ == '1' for _ in shifts_state.split('::')])
-        if self.prompt.index(f'{self.size}-1c') == self.usr_in.index(f'{self.size}-1c') \
-                or not self.highlight_typed_words(event.char):
-            file_name = self.logger.name
-            """For debugging towards the end of the prompt, use self.current = 428.
-            For normal functionality, set self.current = 0"""
-            # self.current = 428
-            self.current = 0
-            messagebox.showinfo('Warm Up Complete', 'Now time for the Real Prompt!',
-                                parent=self.usr_in)
-            self.generate_prompt('test_prompt.txt')
-            self.usr_in.focus_force()
-        else:
-            # scraper = DataScraper()
-            messagebox.showinfo(f'Testing Complete!', parent=self.root)
-            messagebox.showinfo(f'Thank You', 'Thanks for participating! Please contact'
-                                              ' Adam Wojdyla or Malcolm Johnson to submit.', parent=self.root)
+        prompt_index = self.prompt.index(f'{self.size}-1c')
+        user_in_index = self.usr_in.index(f'{self.size}-1c')
+        if prompt_index == user_in_index or not self.highlight_typed_words(event.char):
+            if self.logger.close() == 'train.csv':
+                file_name = self.logger.name
+                """For debugging towards the end of the prompt, use self.current = 428.
+                For normal functionality, set self.current = 0"""
+                # self.current = 428
+                self.current = 0
+                messagebox.showinfo('Warm Up Complete', 'Now time for the Real Prompt!',
+                                    parent=self.usr_in)
+                self.generate_prompt('test_prompt.txt')
+                self.usr_in.focus_force()
+                return 
+            else:
+                # scraper = DataScraper()
+                messagebox.showinfo(f'Testing Complete!', parent=self.root)
+                messagebox.showinfo(f'Thank You', 'Thanks for participating! Please contact'
+                                                  ' Adam Wojdyla or Malcolm Johnson to submit.', parent=self.root)
             self.root.destroy()
 
     #  Prevent the window from closing automatically
