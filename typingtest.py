@@ -3,7 +3,6 @@ from tkinter import messagebox
 import re
 import time
 import json
-from DataScraper import DataScraper
 
 '''csv column names header'''
 COLUMN_NAMES = 'timeDown::timeUp::key::l_shift::r_shift\n'
