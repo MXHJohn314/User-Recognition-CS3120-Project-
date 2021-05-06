@@ -229,8 +229,8 @@ class TypingTest:
             self.generate_prompt('test_prompt.txt')
             self.usr_in.focus_force()
         else:
-            scraper = DataScraper()
-            messagebox.showinfo(f'Testing Complete!', f'{scraper}', parent=self.root)
+            # scraper = DataScraper()
+            messagebox.showinfo(f'Testing Complete!', parent=self.root)
             messagebox.showinfo(f'Thank You', 'Thanks for participating! Please contact'
                                               ' Adam Wojdyla or Malcolm Johnson to submit.', parent=self.root)
             self.root.destroy()
