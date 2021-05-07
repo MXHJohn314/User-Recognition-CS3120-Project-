@@ -2,7 +2,6 @@ from tkinter import *
 from tkinter import messagebox
 import re
 import time
-import json
 
 '''csv column names header'''
 COLUMN_NAMES = 'timeDown::timeUp::key::l_shift::r_shift\n'
@@ -98,12 +97,12 @@ class TypingTest:
         self.prompt.config(state='normal')
         self.prompt.delete('1.0', END)  # Remove any text if it exists
         self.usr_in.delete('1.0', END)
-        with open(txt, 'r') as file: prompt = file.read().strip()  # Get text to be inserted
+        with open(f'src/{txt}', 'r') as file: prompt = file.read().strip()  # Get text to be inserted
         self.logger.open(f"{txt.split('.')[0].split('_')[0]}.csv")  # Name the logger output
         self.prompt.insert(1.0, prompt)  # Fill the top text widget with the prompt
         prompt_words = get_words(self.prompt)  # Use regex to get all words
         self.prompt_dict = get_ranges(self.prompt)  # Get widget string indices for word bounds
-        self.usr_in_dict = get_ranges(self.prompt)  # will be checked against prompt_dict for changes
+        self.usr_in_dict = get_ranges(self.prompt)  # will be checked against prompt_dict for change
         #  Change list of tuples into list of dictionaries with ordered indices of words & ranges
         for i, (r, w) in enumerate(zip(self.prompt_dict, prompt_words)):
             s, e = r
