@@ -213,7 +213,6 @@ class TypingTest:
         t = time.time_ns()
         shifts_state = f'{shifts["Shift_L"]}::{shifts["Shift_R"]}'
         self.logger.log_press(event.char, shifts_state, t)
-        print([_ == '1' for _ in shifts_state.split('::')])
         prompt_index = self.prompt.index(f'{self.size}-1c')
         user_in_index = self.usr_in.index(f'{self.size}-1c')
         if prompt_index == user_in_index or not self.highlight_typed_words(event.char):
