@@ -2,15 +2,12 @@ from tkinter import *
 from tkinter import messagebox
 import re
 import time
-import json
-from DataScraper import DataScraper
 
 '''csv column names header'''
 COLUMN_NAMES = 'timeDown::timeUp::key::l_shift::r_shift\n'
 '''Regex captures matches for each word and space to keep track of highlighting.'''
 word_regex = re.compile(r'(\s+|\S+)')
 '''Require a different format for keybinding.'''
-
 chars = {_ for _ in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRS" \
                     "TUVWXYZ1234567890-=`~!@#$%^&*()_+[{]}\\|\'\";:,./?>"} | {'less'}
 spacers = {'BackSpace', 'space'}
@@ -33,6 +30,11 @@ colors = {
 }
 
 
+def next_slide(args):
+    slide, index = args
+    slide.destroy()
+
+
 #  Return "1" if shift key is down, otherwise "0"
 def shift_check(e):
     if e.type == '2':
@@ -40,6 +42,7 @@ def shift_check(e):
     elif e.type == '3':
         key = 'Shift_L' if shifts['Shift_L'] == '1' else 'Shift_R'
         shifts[key] = '0'
+
 
 #  Used to simplify colorization of text in either of the Text widgets.
 def change_color(txt, name, color):
@@ -81,7 +84,6 @@ class TypingTest:
         self.prompt = Text(height=14, font=("Arial", 10))  # Words to type will appear here
         self.usr_in = Text(height=14, font=("Arial", 10))  # User input will appear here
         self.generate_prompt()  # Fill self.prompt with the first test, and index the words.
-        messagebox.showinfo('Get Ready!', 'The test will begin now.', parent=self.usr_in)
         self.usr_in.focus_force()  # User should only be able to edit the bottom half.
         #  Set key binds for all keys and combos (ignore keys we don't care about)
         bnd = self.root.bind
@@ -93,6 +95,7 @@ class TypingTest:
         [bnd(f'<{_}>', 'break') for _ in ignored_keys]
         [bnd(f'<{i}>', self.check_text) for i in spacers]
         bnd('<KeyRelease>', lambda e: release(e, '::'.join(shifts.values())))
+        messagebox.showinfo('Get Ready!', 'The test will begin now.', parent=self.usr_in)
 
     #  Set up the typing test for use.
     def generate_prompt(self, txt='train_prompt.txt'):
@@ -104,7 +107,8 @@ class TypingTest:
         self.prompt.insert(1.0, prompt)  # Fill the top text widget with the prompt
         prompt_words = get_words(self.prompt)  # Use regex to get all words
         self.prompt_dict = get_ranges(self.prompt)  # Get widget string indices for word bounds
-        self.usr_in_dict = get_ranges(self.prompt)  # will be checked against prompt_dict for changes
+        self.usr_in_dict = get_ranges(
+            self.prompt)  # will be checked against prompt_dict for changes
         #  Change list of tuples into list of dictionaries with ordered indices of words & ranges
         for i, (r, w) in enumerate(zip(self.prompt_dict, prompt_words)):
             s, e = r
@@ -144,7 +148,9 @@ class TypingTest:
             txt_ranges[start:end],
             txt_words[start:end])
         for i, (start_, end_), word in _zip:
-            if i > len(self.usr_in_dict) - 1: return False
+            # The test is over if the user types more words than are present in the prompt.
+            if i > len(self.prompt_dict) - 1: return False
+            if i > len(self.usr_in_dict) - 1: break
             txt = self.usr_in_dict[i]
             self.usr_in.tag_remove(txt['tag'], txt['s'], txt['e'])
             self.usr_in_dict[i]['word'] = word
@@ -152,6 +158,7 @@ class TypingTest:
             self.usr_in_dict[i]['e'] = end_
             self.usr_in_dict[i] = txt
             self.usr_in.tag_add(txt['tag'], txt['s'], txt['e'])
+        if self.current >= len(self.prompt_dict): return False
         prompt_entry = self.prompt_dict[self.current]  # Get current indexing info for comparison
         user_entry = self.usr_in_dict[self.current]
         change_color(self.prompt, prompt_entry['tag'], colors['black'])  # Un-highlight current word
@@ -215,30 +222,29 @@ class TypingTest:
         t = time.time_ns()
         shifts_state = f'{shifts["Shift_L"]}::{shifts["Shift_R"]}'
         self.logger.log_press(event.char, shifts_state, t)
-        print([_ == '1' for _ in shifts_state.split('::')])
         prompt_index = self.prompt.index(f'{self.size}-1c')
         user_in_index = self.usr_in.index(f'{self.size}-1c')
-        if prompt_index == user_in_index or not self.highlight_typed_words(event.char):
+
+        # The prompt is over if the user types the same number of words as the prompt has
+        if prompt_index == user_in_index or int(float(user_in_index)) > 1 \
+                or not self.highlight_typed_words(event.char):
             if self.logger.close() == 'train.csv':
-                file_name = self.logger.name
-                """For debugging towards the end of the prompt, use self.current = 428.
-                For normal functionality, set self.current = 0"""
-                # self.current = 428
                 self.current = 0
                 messagebox.showinfo('Warm Up Complete', 'Now time for the Real Prompt!',
                                     parent=self.usr_in)
                 self.generate_prompt('test_prompt.txt')
                 self.usr_in.focus_force()
-                return 
+                return
             else:
-                # scraper = DataScraper()
-                messagebox.showinfo(f'Testing Complete!', parent=self.root)
-                messagebox.showinfo(f'Thank You', 'Thanks for participating! Please contact'
-                                                  ' Adam Wojdyla or Malcolm Johnson to submit.', parent=self.root)
+                messagebox.showinfo(
+                    f'Testing Complete!',
+                    f'Thanks for participating! Please contact Adam Wojdyla or Malcolm Johnson '
+                    f'to submit your csv files.', parent=self.root)
             self.root.destroy()
 
     #  Prevent the window from closing automatically
-    def mainloop(self): self.root.mainloop()
+    def mainloop(self):
+        self.root.mainloop()
 
 
 # This class is responsible for formatting csv rows of typing
@@ -282,6 +288,3 @@ if __name__ == "__main__":
     editor = TypingTest()
     editor.root.protocol("WM_DELETE_WINDOW", on_closing)
     editor.mainloop()
-
-
-
