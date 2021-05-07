@@ -229,7 +229,6 @@ class TypingTest:
                 return 
             else:
                 # scraper = DataScraper()
-                messagebox.showinfo(f'Testing Complete!', parent=self.root)
                 messagebox.showinfo(f'Thank You', 'Thanks for participating! Please contact'
                                                   ' Adam Wojdyla or Malcolm Johnson to submit.', parent=self.root)
             self.root.destroy()
