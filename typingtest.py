@@ -171,11 +171,12 @@ class TypingTest:
             if key.isspace():  # Prematurely went to word, highlight word red and go to next word
                 txt = self.usr_in_dict[self.current]
                 txt['is_correct'] = False
+                start, end = [_.strip() for _ in txt['tag'][1:-1].split(',')]
+                txt['tag '] = f'{(start, self.usr_in.index(INSERT))}'
+                self.usr_in_dict[self.current] = txt
                 change_color(self.usr_in, txt['tag'], colors[False])
-                self.current += 1
                 txt = self.usr_in_dict[self.current]
                 change_color(self.usr_in, txt['tag'], colors[True])
-                self.current += 1
             elif key == '\b':  # If backspace typed, check if current word is now previous word
                 insert = int(self.usr_in.index(f'{INSERT}').split('.')[1])
                 start = int(user_entry['s'].split('.')[1])
@@ -226,7 +227,7 @@ class TypingTest:
                                     parent=self.usr_in)
                 self.generate_prompt('test_prompt.txt')
                 self.usr_in.focus_force()
-                return 
+                return
             else:
                 # scraper = DataScraper()
                 messagebox.showinfo(f'Thank You', 'Thanks for participating! Please contact'
