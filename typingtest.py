@@ -1,8 +1,10 @@
+import hashlib
 from tkinter import *
 from tkinter import messagebox
 import re
 import time
 
+code_hash = hashlib.md5(''.join(open('typingtest.py', 'r').readlines()).encode('utf-8'))
 '''csv column names header'''
 COLUMN_NAMES = 'timeDown::timeUp::key::l_shift::r_shift\n'
 '''Regex captures matches for each word and space to keep track of highlighting.'''
@@ -69,6 +71,7 @@ def get_words(txt):
 class TypingTest:
     def __init__(self):
         self.data = {}  # Hold some previous word data about typing correctness
+        self.close_result = None
         self.current = 0  # keeps track of the current word or space that should be typed.
         self.root = Tk()  # Gui root window object
         self.root.title("Typing Test")
@@ -217,7 +220,8 @@ class TypingTest:
         prompt_index = self.prompt.index(f'{self.size}-1c')
         user_in_index = self.usr_in.index(f'{self.size}-1c')
         if prompt_index == user_in_index or not self.highlight_typed_words(event.char):
-            if self.logger.close() == 'train.csv':
+            self.close_result = self.logger.close()
+            if self.close_result == 'train.csv':
                 file_name = self.logger.name
                 """For debugging towards the end of the prompt, use self.current = 428.
                 For normal functionality, set self.current = 0"""
@@ -230,12 +234,15 @@ class TypingTest:
                 return
             else:
                 # scraper = DataScraper()
-                messagebox.showinfo(f'Thank You', 'Thanks for participating! Please contact'
-                                                  ' Adam Wojdyla or Malcolm Johnson to submit.', parent=self.root)
+                messagebox.showinfo(
+                    f'Thank You', 'Thanks for participating! Please contactAdam Wojdyla or '\
+                                  ' Malcolm Johnson to submit.', parent=self.root)
             self.root.destroy()
 
     #  Prevent the window from closing automatically
-    def mainloop(self): self.root.mainloop()
+    def mainloop(self):
+        self.root.mainloop()
+        return self.close_result
 
 
 # This class is responsible for formatting csv rows of typing
@@ -246,6 +253,8 @@ class Logger:
         self.completed_logs = 0  # count for which file is current
         self.name = ''  # Name of the file that will be written to
         self.event_buffer = {}  # Pairs every down event row with an up event row
+        self.test_hash = None
+        self.train_hash = None
 
     # Format the row for KeyDown info and store it in the buffer
     def log_press(self, key, shifts_state, t):
@@ -264,21 +273,44 @@ class Logger:
 
     # Write contents stored in log to a file, and return the file name created.
     def close(self):
+        print(COLUMN_NAMES + self.log + '\n\n')
         with open(self.name, 'w') as file:
             file.write(COLUMN_NAMES + self.log)
-        print(COLUMN_NAMES + self.log + '\n\n')
-        self.log = ''
-        return self.name
+        if 'train' in self.name:
+            self.train_hash = hashlib.md5(COLUMN_NAMES + self.log)
+            self.log = ''
+            return self.name
+        else:
+            self.test_hash = hashlib.md5(COLUMN_NAMES + self.log)
+            return hashlib.md5(f'{code_hash}{self.train_hash}{self.test_hash}')
 
     # Does not open a file immediately, but will open and write the file when test is over.
     def open(self, param):
         self.name = param
 
 
+class CheckSum:
+    def __init__(self, code_hash):
+        self.code_hash = code_hash
+
+    def __hash_file(self, file):
+        return hashlib.md5(''.join(open(file, 'r').readlines()).encode('utf-8'))
+
+    def verify_hash(self, file_1, file_2, result):
+        h_1 = self.__hash_file(file_1)
+        h_2 = self.__hash_file(file_2)
+        return hashlib.md5(f'{self.code_hash}{h_1}{h_2}'.encode('utf-8')) == result
+
+
 if __name__ == "__main__":
     editor = TypingTest()
     editor.root.protocol("WM_DELETE_WINDOW", on_closing)
-    editor.mainloop()
+    result_hash = editor.mainloop()
+    checker = CheckSum(code_hash)
+    if checker.verify_hash('train.csv', 'test.csv'):
+        print('all good')
+    else:
+        print('this was tampered with...')
 
 
 

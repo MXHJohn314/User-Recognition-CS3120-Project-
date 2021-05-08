@@ -4,6 +4,6 @@
 /.idea/modules.xml
 /.idea/vcs.xml
 /.idea/.gitignore
-/train.csv
-/test.csv
+/DATA/users/emily_boyer/train.csv
+/DATA/users/emily_boyer/test.csv
 /DATA/
