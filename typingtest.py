@@ -114,8 +114,8 @@ class TypingTest:
 
         '''!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         For debugging toward the end of the prompt, uncomment the next two lines.'''
-        self.usr_in.insert(1.0, ''.join(prompt_words[:-3]))
-        self.current = len(prompt_words) - 3
+        # self.usr_in.insert(1.0, ''.join(prompt_words[:-3]))
+        # self.current = len(prompt_words) - 3
 
         # Configure prompt and user input widget options, colorize the first word to type.
         self.prompt.config(wrap=WORD, exportselection=0, insertbackground='white')
