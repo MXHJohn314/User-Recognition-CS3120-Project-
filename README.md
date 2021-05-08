@@ -14,15 +14,18 @@ from data collected by volunteers, and tries to recognize users based on the way
 
 
 ## Instructions
-1. Clone the repo: `https://github.com/GalacticWafer/CS_3120_Project.git`
-2. Use your preferred method of running python files to run typingtest.py
+
+1. Open your prefered command line interface (such as Terminal, CMD, Powershell, or WSL) in a location that you would like to clone the repository. For example, the Documents folder.
+2. Clone the repo: `https://github.com/GalacticWafer/CS_3120_Project.git`
+3. Change directory into the project: `cd CS_3120_Project`
+4. Use your preferred method of running python files to run typingtest.py
    + Note: If you are on a Linux distribution or running a non-standard Python installation, you may need to run `pip install tkinter`
-4. When the gui appears, start typing the prompt in the lower half of the window. Just like a typing test, the current word will be highlighted in the top window. Mistakes are highlighted in red. Fix them if you want.
+5. When the gui appears, start typing the prompt in the lower half of the window. Just like a typing test, the current word will be highlighted in the top window. Mistakes are highlighted in red. Fix them if you want.
 
 ![alt text](https://github.com/GalacticWafer/CS_3120_Project/blob/main/InstructionPictures/Step1.png)
 
-5. There are two prompts to type. One is for model training, the other is for testing.
-6. After you complete both tests, send your `train.csv` and `test.csv` to us. You can use Teams if you're connected to us through MSU Denver, or send to one of the email addresses below.
+6. There are two prompts to type. One is for model training, the other is for testing.
+7. After you complete both tests, send your `train.csv` and `test.csv` to us. You can use Teams if you're connected to us through MSU Denver, or send to one of the email addresses below.
 ![alt text](https://github.com/GalacticWafer/CS_3120_Project/blob/main/InstructionPictures/Step2.png)
 
 ### Troubleshooting
