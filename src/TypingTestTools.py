@@ -49,3 +49,20 @@ def os_check(csv_name) -> bool:
     with open(csv_name, 'w') as file:
         file.write(string)
     return True
+
+
+def fillna_with_row_mean(df):
+    return df.T.fillna(df.mean(1)).T
+
+
+def place_in(df, df2):
+    return df2.assign(**df)
+
+
+def inpute(df, pattern):
+    return (
+        df
+            .filter(regex=pattern)
+            .pipe(fillna_with_row_mean)
+            .pipe(place_in, df)
+    )
