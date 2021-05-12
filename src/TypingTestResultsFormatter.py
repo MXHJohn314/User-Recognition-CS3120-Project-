@@ -33,7 +33,8 @@ class TypingTestResultsFormatter:
         self.user_data = data
         key_event_list = self.user_data['key'].tolist()
         self.user_string = get_user_string(key_event_list)
-        self.user_words = re.split('(\s|\S)', self.user_string)  # List of all the words that the user typed have been typed
+        self.user_words = re.split('(\s|\S)',
+                                   self.user_string)  # List of all the words that the user typed have been typed
         dicts = self.__get_char_stats(data)
         train_dict, test_dict = dicts
         _train_frame = pd.DataFrame(train_dict, index=[usr_name])
@@ -52,8 +53,10 @@ class TypingTestResultsFormatter:
         last_idx = len(new_user_dataframe.index)
         test_indices = random.sample(range(1, last_idx - 1), int(last_idx * self.split))
         train_indices = [x for x in range(1, last_idx - 1) if x not in test_indices]
-        test_dict['backspaces'] = [(new_user_dataframe.iloc[test_indices]['key'] == "backspace").sum()]
-        train_dict['backspaces'] = [(new_user_dataframe.iloc[train_indices]['key'] == "backspace").sum()]
+        test_dict['backspaces'] = [
+            (new_user_dataframe.iloc[test_indices]['key'] == "backspace").sum()]
+        train_dict['backspaces'] = [
+            (new_user_dataframe.iloc[train_indices]['key'] == "backspace").sum()]
         test_indices = set(test_indices)
         for idx in range(len(stop_event_rows) - 1):
             newer_row = stop_event_rows.iloc[idx]
@@ -87,7 +90,8 @@ class TypingTestResultsFormatter:
             for key_ in dict_:
                 if not isinstance(dict_[key_], list):
                     dict_[key_] = [dict_[key_]]
-                else: dict_[key_] = [mean(dict_[key_])]
+                else:
+                    dict_[key_] = [mean(dict_[key_])]
         # for dict_ in [test_dict, train_dict]:
         #     user_means = {}
         #     for key_ in dict_:
@@ -107,7 +111,7 @@ class TypingTestResultsFormatter:
         #     for key_ in dict_:
         #         if not isinstance(dict_[key_], list) or len(dict_[key_]) != 1:
         #             print(dict_[key_])
-            # Todo: impute the data where needed
+        # Todo: impute the data where needed
         return train_dict, test_dict
 
     def __clear(self):
@@ -123,9 +127,15 @@ class TypingTestResultsFormatter:
 
     def to_csv(self):
         df_train = self.impute(self.rows_train)
-        df_train.to_csv('train.csv')
+        df_train.to_csv('train.csv', index=False)
         df_test = self.impute(self.rows_train)
-        df_test.to_csv('test.csv')
+        df_test.to_csv('test.csv', index=False)
+        names = df_train.index.tolist()
+        features = df_train.columns.tolist()
+        with open('names.csv', 'w') as csv:
+            csv.write('\n'.join(names))
+        with open('features.csv', 'w') as csv:
+            csv.write('\n'.join(features))
         return df_train, df_test
 
     def impute(self, rows) -> pd.DataFrame:
@@ -139,7 +149,7 @@ class TypingTestResultsFormatter:
         return _df
 
 
-if __name__ == "__main__":
+def init():
     formatter = TypingTestResultsFormatter()
     files = get_file_names()
     for i, user_name in enumerate(files):
@@ -150,6 +160,4 @@ if __name__ == "__main__":
         user_data = pd.concat([train_frame, test_frame])
         formatter.add_user(user_name, user_data)
         # if i == 1: break
-    train, test = formatter.to_csv()
-    print(train.isnull().sum().sum())
-    print(test.isnull().sum().sum())
+    return formatter.to_csv()
