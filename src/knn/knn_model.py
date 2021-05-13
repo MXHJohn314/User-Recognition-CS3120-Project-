@@ -26,13 +26,12 @@ y_train = np.array(list(train.index.values))
 train = pd.read_csv('train.csv')
 train.drop(index=0, axis=0)
 X_train = train.to_numpy()
-names = np.genfromtxt('names.csv', delimiter=',')
-features = np.genfromtxt('features.csv', delimiter=',')
+names = np.genfromtxt('../nn/names.csv', delimiter=',')
+features = np.genfromtxt('../nn/features.csv', delimiter=',')
 test = pd.read_csv('test.csv')
 test.reset_index()
 X_test = test.to_numpy()
 y_test = np.array(list(test.index.values))
-
 # data scaling will be done as follow
 from sklearn.preprocessing import StandardScaler
 

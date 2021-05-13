@@ -9,7 +9,7 @@ def drop_row_bound(new_user, row) -> pd.DataFrame:
 
 
 def get_file_names() -> list:
-    users = "../DATA/users"
+    users = "../../DATA/users"
     trains = tests = []
     names = {}
     for user_name in os.listdir(users):

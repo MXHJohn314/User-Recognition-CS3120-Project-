@@ -1,16 +1,11 @@
 import random
 
-import pandas
-import pandas as pd
-
-from TypingTestTools import *
+from src.knn.TypingTestTools import *
 from statistics import mean
-from enchant.utils import levenshtein
-from sklearn.model_selection import train_test_split
 
 
 # This class is meant to clean up the suboptimal format of the provided data
-class TypingTestResultsFormatter:
+class NeighborsFormatter:
     def __init__(self, prompt_path='train_prompt.txt', _split=0.2):
         self.user_data = None  # Will be a dataframe for input from a user
         self.name = ''  # Name of the current user (an object for classification)
@@ -92,25 +87,6 @@ class TypingTestResultsFormatter:
                     dict_[key_] = [dict_[key_]]
                 else:
                     dict_[key_] = [mean(dict_[key_])]
-        # for dict_ in [test_dict, train_dict]:
-        #     user_means = {}
-        #     for key_ in dict_:
-        #         if key_.endswith('count'):
-        #             dict_[key_] = [dict_[key_]]
-        #         elif key_.endswith('avg'):
-        #             avg = key_[-7:]
-        #             if avg not in user_means:
-        #                 user_means[avg] = []
-        #             user_means[avg].append(mean(dict_[key_]))
-        #     for key_ in user_means:
-        #         user_means[key_] = [mean(user_means[key_])]
-        #     dict_.update(user_means)
-        #     for key_ in dict_:
-        #         if isinstance(dict_[key_], list) and len(dict_[key_]) > 1:
-        #             dict_[key_] = [mean(dict_[key_])]
-        #     for key_ in dict_:
-        #         if not isinstance(dict_[key_], list) or len(dict_[key_]) != 1:
-        #             print(dict_[key_])
         # Todo: impute the data where needed
         return train_dict, test_dict
 
@@ -150,7 +126,7 @@ class TypingTestResultsFormatter:
 
 
 def init():
-    formatter = TypingTestResultsFormatter()
+    formatter = NeighborsFormatter()
     files = get_file_names()
     for i, user_name in enumerate(files):
         print(user_name, i)
